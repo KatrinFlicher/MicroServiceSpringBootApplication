@@ -1,6 +1,8 @@
+
 ***Hello!
-Author: Zaretskaya Valerievna Katsiaryna
-email: katrinflicher@gmail.com
+---Contacts---
+Author: Zaretskaya Katsiaryna Valerievna
+email: puperlastik@mail.ru // katrinflicher@gmail.com
 
 When you're done, you can delete the content in this README and update the file with details for others getting started with your repository.
 
