@@ -35,9 +35,9 @@ public class CustomFileCreator extends org.apache.tools.ant.Task {
             String valueProperty = att.concat(": " + getProject().getProperty(att));
             createLine().setFileLine(valueProperty);
         }
-
+        PrintWriter writer = null;
         try {
-            PrintWriter writer = new PrintWriter(fileName, "UTF-8");
+            writer = new PrintWriter(fileName, "UTF-8");
             for (Line line : lines) {
                 writer.println(line.getFileLine());
             }
