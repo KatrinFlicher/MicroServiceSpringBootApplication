@@ -41,9 +41,12 @@ public class CustomFileCreator extends org.apache.tools.ant.Task {
             for (Line line : lines) {
                 writer.println(line.getFileLine());
             }
-            writer.close();
         } catch (IOException e) {
             throw new BuildException(e);
+        }
+        finally{
+            if (writer!=null)
+                writer.close();
         }
     }
 
