@@ -41,15 +41,22 @@
   </target>
 
     <!-- =================================
-                  target: useTask
+                 target: declarationTask
          ================================= -->
-  <target name="useTask" description="Using the Task" depends="compileAntTask">
+  <target name="declarationTask" description="Declaration the Custom Task" depends="compileAntTask">
       <taskdef name="CustomFileCreator" 
                classname="by.training.katrinflicher.plugin.CustomFileCreator"
                classpath="CustomFileCreator.jar"/>
+    </target>
+
+    <!-- =================================
+                  target: useTask
+         ================================= -->
+  <target name="useTask" description="Using the Task" depends="declarationTask">
       <CustomFileCreator fileName="${classes.dir}/manifest.mf">
-          <line fileline="Main-Class: Main"/>
-          <line fileline="Java-Options: -XX:MaxMetaspaceSize=20m"/>
+          <attribute name="Main-Class" value="Main"/>
+          <attribute name="Java-Options" value="-XX:MaxMetaspaceSize=20m"/>
+          <attribute name="Built-By" value="Zaretskaya Katsiaryna"/>
       </CustomFileCreator>
     </target>
 
@@ -79,5 +86,6 @@
   <target name="clean" description="Delete all generated files">
         <delete dir="${classes.dir}" failonerror="false"/>
         <delete file="${ant.project.name}.jar"/>
+        <delete file="CustomFileCreator.jar"/>
   </target>
 </project>
