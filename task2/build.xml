@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="task2" default="run" basedir="." xmlns:ivy="antlib:org.apache.ivy.ant" >
+
+<property file="attributes.properties"/>
+
+     <!-- =================================
+                  target: resolve
+         ================================= -->
+  <target name="resolve" description="retrieve dependencies with Ivy">
+      <ivy:retrieve />
+  </target>
+
+    <!-- =================================
+                  target: compile
+         ================================= -->
+  <target name="compile" depends="resolve" description="Compiles the Task">
+      <mkdir dir="${classes.dir}"/>
+      <unzip src="lib/cliche-shell-0.9.3.jar" 
+             dest="${classes.dir}" />
+      <javac srcdir="${src.dir}" 
+             destdir="${classes.dir}" 
+             includeantruntime="false" 
+             excludes="${plugin.src.dir}/**">
+          <classpath location="${lib.dir}/cliche-shell-0.9.3.jar"/>
+      </javac>
+  </target>
+
+    <!-- =================================
+              target: compileAntTask
+         ================================= -->
+  <target name="compileAntTask" description="Compiles the Task">
+      <mkdir dir="${classes.dir}/${plugin.src.dir}"/>
+      <javac destdir="${classes.dir}" 
+             srcdir="${src.dir}/${plugin.src.dir}" 
+             includeantruntime="false">
+          <classpath location="${lib.dir}/ant-1.8.2.jar"/>        
+      </javac>
+      <jar destfile="${plugin}.jar" 
+           basedir="${classes.dir}" 
+           includes="${plugin.src.dir}/**"/>
+  </target>
+
+    <!-- =================================
+                 target: declarationTask
+         ================================= -->
+  <target name="declarationTask" description="Declaration the Custom Task" depends="compileAntTask">
+      <taskdef name="CustomFileCreator" 
+               classname="by.training.katrinflicher.plugin.CustomFileCreator"
+               classpath="CustomFileCreator.jar"/>
+    </target>
+
+    <!-- =================================
+                  target: useTask
+         ================================= -->
+  <target name="useTask" description="Using the Task" depends="declarationTask">
+      <CustomFileCreator fileName="${classes.dir}/manifest.mf">
+          <attribute name="Main-Class" value="Main"/>
+          <attribute name="Java-Options" value="-XX:MaxMetaspaceSize=20m"/>
+          <attribute name="Built-By" value="Zaretskaya Katsiaryna"/>
+      </CustomFileCreator>
+    </target>
+
+    <!-- =================================
+                  target: jarProject
+         ================================= -->
+  <target name="jarProject"  description="JARs the Task" depends="compile, useTask">
+      <jar manifest="${classes.dir}/manifest.mf" 
+           destfile="${ant.project.name}.jar" 
+           basedir="${classes.dir}" 
+           excludes="${plugin.src.dir}/**, manifest.mf"/>
+  </target>
+
+    <!-- =================================
+                  target: run
+         ================================= -->
+  <target name="run" depends="jarProject">
+      <java jar="${ant.project.name}.jar" classpath="${classes.dir}" fork="true">
+          <jvmarg value="-XX:MaxMetaspaceSize=20m"/>
+          <classpath location="${lib.dir}/cliche-shell-0.9.3.jar"/>   
+      </java>
+  </target>
+
+    <!-- =================================
+                  target: clean
+         ================================= -->
+  <target name="clean" description="Delete all generated files">
+        <delete dir="${classes.dir}" failonerror="false"/>
+        <delete file="${ant.project.name}.jar"/>
+        <delete file="CustomFileCreator.jar"/>
+  </target>
+</project>
