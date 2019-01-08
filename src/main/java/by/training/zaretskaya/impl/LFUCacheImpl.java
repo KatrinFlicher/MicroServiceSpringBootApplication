@@ -27,8 +27,9 @@ public class LFUCacheImpl implements ICache {
     //The method provides linear performance O(n)
     // since method invalidate() has O(n) and method map.put(key, value) has O(1).
     public Object put(Object key, Object value) {
-        if (size()==sizeMax)
+        if (size()==sizeMax){
             invalidate();
+        }
         mapFrequencies.put(key,FREQUENCY_IF_THE_FIRST_CALL);
         return cacheMap.put(key, value);
     }
@@ -45,8 +46,11 @@ public class LFUCacheImpl implements ICache {
             Integer frequency = mapFrequencies.get(key);
             frequency++;
             mapFrequencies.put(key,frequency);
-        return cacheMap.get(key);}
-        else throw new IllegalArgumentException(); //Here we must go to Data base
+            return cacheMap.get(key);
+        }
+        else{
+            throw new IllegalArgumentException(); //Here we must go to Data base
+        }
     }
 
     //The method provides constant-time performance O(n)
@@ -61,9 +65,11 @@ public class LFUCacheImpl implements ICache {
 
     //The method provides performance from O(1) to O(n) depending on the running method.
     public Object putIfAbsent(Object key, Object value) {
-        if (!cacheMap.containsKey(key))
+        if (!cacheMap.containsKey(key)){
             return put(key, value);
-        else
+        }
+        else{
             return get(key);
+        }
     }
 }

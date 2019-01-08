@@ -30,8 +30,9 @@ public class LRUCacheImpl implements ICache {
     // since methods included in it have performance О(1)(methods invalidate(),
     // list.add(key) and map.put(key, value).
     public Object put(Object key, Object value) {
-        if(size()==sizeMax)
+        if(size()==sizeMax){
             invalidate();
+        }
         listRecentKeys.add(key);
         return cacheMap.put(key, value);
     }
@@ -57,14 +58,18 @@ public class LRUCacheImpl implements ICache {
             listRecentKeys.add(key);
             return cacheMap.get(key);
         }
-        else throw new IllegalArgumentException(); //Here we must go to Data base
+        else{
+            throw new IllegalArgumentException(); //Here we must go to Data base
+        }
     }
 
     //The method provides performance from O(1) to O(n) depending on the running method.
     public Object putIfAbsent(Object key, Object value) {
-        if (!cacheMap.containsKey(key))
+        if (!cacheMap.containsKey(key)){
             return put(key, value);
-        else
+        }
+        else{
             return get(key);
+        }
     }
 }

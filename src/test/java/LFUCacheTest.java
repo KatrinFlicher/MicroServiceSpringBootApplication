@@ -75,7 +75,6 @@ public class LFUCacheTest {
         Assert.assertNotEquals("value12", cache.get("key"));
     }
 
-
     private void putOneValueInCache(int index){
         cache.put("key"+index, "value"+index);
     }

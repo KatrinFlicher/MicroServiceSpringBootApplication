@@ -6,7 +6,7 @@ package by.training.zaretskaya.interfaces;
  *
  * @author Zaretskaya Katsiaryna
  * */
-public interface ICache {
+public interface ICache <K,V> {
 
     /**
      * Returns the number of key-value mappings in this map.
@@ -19,29 +19,29 @@ public interface ICache {
      * @param key - key with which the specified value is to be associated
      * @param value - value to be associated with the specified key
      * */
-    Object put(Object key, Object value);
+    V put(K key, V value);
 
     /**
      * Returns true if this cache contains a mapping for the specified key.
      * @param key - The key whose presence in this cache is to be tested
      * */
-    boolean contains(Object key);
+    boolean contains(K key);
 
     /**
      * Returns the value to which the specified key is mapped, or null if this cache contains no mapping for the key.
      * @param key - the key whose associated value is to be returned
      * */
-    Object get(Object key);
+    V get(K key);
 
     /**
      * * Clear space in this cache for one record due to its overflow.
      * */
-    Object invalidate();
+    V invalidate();
 
     /**
      * If the specified key is not already associated with a value, associate it with the given value.
      * @param key key with which the specified value is to be associated
      * @param value - value to be associated with the specified key
      * */
-    Object putIfAbsent(Object key, Object value);
+    V putIfAbsent(K key, V value);
 }
