@@ -8,10 +8,10 @@ import java.util.Map;
 
 /**
  * Class implements cache with LRU(least recently used) algorithm.
- * */
+ */
 public class LRUCacheImpl implements ICache {
 
-    private Map<Object,Object> cacheMap;
+    private Map<Object, Object> cacheMap;
     private LinkedList<Object> listRecentKeys;
     private int sizeMax;
 
@@ -30,10 +30,12 @@ public class LRUCacheImpl implements ICache {
     // since methods included in it have performance О(1)(methods invalidate(),
     // list.add(key) and map.put(key, value).
     public Object put(Object key, Object value) {
-        if(size()==sizeMax){
-            invalidate();
+        if (!contains(key)) {
+            if (size() == sizeMax) {
+                invalidate();
+            }
+            listRecentKeys.add(key);
         }
-        listRecentKeys.add(key);
         return cacheMap.put(key, value);
     }
 
@@ -53,22 +55,20 @@ public class LRUCacheImpl implements ICache {
     // since methods included in it have performance О(1)(methods list.add(key) and map.get(key) have O(1),
     // but list.remove(object) have O(n)(we search by value not by id)).
     public Object get(Object key) {
-        if(contains(key)){
+        if (contains(key)) {
             listRecentKeys.remove(key);
             listRecentKeys.add(key);
             return cacheMap.get(key);
-        }
-        else{
+        } else {
             throw new IllegalArgumentException(); //Here we must go to Data base
         }
     }
 
     //The method provides performance from O(1) to O(n) depending on the running method.
     public Object putIfAbsent(Object key, Object value) {
-        if (!cacheMap.containsKey(key)){
+        if (!contains(key)) {
             return put(key, value);
-        }
-        else{
+        } else {
             return get(key);
         }
     }

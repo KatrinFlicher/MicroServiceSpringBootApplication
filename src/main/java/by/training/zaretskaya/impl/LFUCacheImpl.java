@@ -2,15 +2,18 @@ package by.training.zaretskaya.impl;
 
 import by.training.zaretskaya.interfaces.ICache;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Class implements cache with LRU(least recently used) algorithm.
- * */
+ */
 public class LFUCacheImpl implements ICache {
-    private Map<Object,Object> cacheMap;
-    private Map<Object,Integer> mapFrequencies;
-    private static final int FREQUENCY_IF_THE_FIRST_CALL = 1;
+    private static final int INITIAL_FREQUENCY = 0;
+    private Map<Object, Object> cacheMap;
+    private Map<Object, Integer> mapFrequencies;
     private int sizeMax;
 
     public LFUCacheImpl(int size) {
@@ -27,10 +30,12 @@ public class LFUCacheImpl implements ICache {
     //The method provides linear performance O(n)
     // since method invalidate() has O(n) and method map.put(key, value) has O(1).
     public Object put(Object key, Object value) {
-        if (size()==sizeMax){
-            invalidate();
+        if (!contains(key)) {
+            if (size() == sizeMax) {
+                invalidate();
+            }
+            mapFrequencies.put(key, INITIAL_FREQUENCY);
         }
-        mapFrequencies.put(key,FREQUENCY_IF_THE_FIRST_CALL);
         return cacheMap.put(key, value);
     }
 
@@ -42,18 +47,17 @@ public class LFUCacheImpl implements ICache {
     //The method provides constant-time performance O(1)
     // since methods included in it have performance О(1)(methods contains(key),map.put(key,value), map.get(key)).
     public Object get(Object key) {
-        if (contains(key)){
+        if (contains(key)) {
             Integer frequency = mapFrequencies.get(key);
             frequency++;
-            mapFrequencies.put(key,frequency);
+            mapFrequencies.put(key, frequency);
             return cacheMap.get(key);
-        }
-        else{
+        } else {
             throw new IllegalArgumentException(); //Here we must go to Data base
         }
     }
 
-    //The method provides constant-time performance O(n)
+    //The method provides linear performance O(n)
     // since method Collections.min depends on size of collection and has linear performance О(n)
     // and method map.remove(key) has O(1)).
     public Object invalidate() {
@@ -65,10 +69,9 @@ public class LFUCacheImpl implements ICache {
 
     //The method provides performance from O(1) to O(n) depending on the running method.
     public Object putIfAbsent(Object key, Object value) {
-        if (!cacheMap.containsKey(key)){
+        if (!contains(key)) {
             return put(key, value);
-        }
-        else{
+        } else {
             return get(key);
         }
     }
