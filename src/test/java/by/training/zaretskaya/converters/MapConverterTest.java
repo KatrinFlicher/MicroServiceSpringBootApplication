@@ -22,6 +22,8 @@ public class MapConverterTest {
     @Test(expected = IllegalArgumentException.class)
     public void testPossibilityOfInfiniteRecursionInConverter() throws IllegalAccessException {
         DummyPerson dummyPerson = new DummyPerson();
+        dummyPerson.setAge(10);
+        dummyPerson.setMother(new DummyPerson());
         Map<String, Map<String, Object>> mapFromObject = MapConverter.toMap(dummyPerson);
     }
 }

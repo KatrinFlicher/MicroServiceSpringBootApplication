@@ -1,6 +1,6 @@
 package by.training.zaretskaya.beans;
 
-public class DummyPerson  {
+public class DummyPerson {
     private int age;
     private DummyPerson mother;
 
