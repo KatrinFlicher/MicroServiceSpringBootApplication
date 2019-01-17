@@ -19,11 +19,10 @@ public class MapConverter {
         for (Field field : fields) {
             Object valueField;
             Class<?> type = field.getType();
-            if (type.isPrimitive() || type.getAnnotation(ConvertibleToMap.class) != null) {
+            if (type.isPrimitive() || type.isAnnotationPresent(ConvertibleToMap.class)) {
                 checkAccess(field);
                 if (!type.isPrimitive()) {
-                    Object obj = field.get(object);
-                    if (objectClass.isInstance(obj)){
+                    if (objectClass.isAssignableFrom(type)) {
                         throw new IllegalArgumentException("Infinite Recursion");
                     }
                     valueField = toMap(field.get(object));
