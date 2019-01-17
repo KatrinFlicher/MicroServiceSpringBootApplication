@@ -1,5 +1,6 @@
 package by.training.zaretskaya.converters;
 
+import by.training.zaretskaya.beans.DummyMother;
 import by.training.zaretskaya.beans.DummyPerson;
 import by.training.zaretskaya.beans.Person;
 import by.training.zaretskaya.beans.Pet;
@@ -23,7 +24,7 @@ public class MapConverterTest {
     public void testPossibilityOfInfiniteRecursionInConverter() throws IllegalAccessException {
         DummyPerson dummyPerson = new DummyPerson();
         dummyPerson.setAge(10);
-        dummyPerson.setMother(new DummyPerson());
+        dummyPerson.setMother(new DummyMother());
         Map<String, Map<String, Object>> mapFromObject = MapConverter.toMap(dummyPerson);
     }
 }

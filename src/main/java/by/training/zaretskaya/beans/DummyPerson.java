@@ -2,7 +2,7 @@ package by.training.zaretskaya.beans;
 
 public class DummyPerson {
     private int age;
-    private DummyPerson mother;
+    private DummyMother mother;
 
     public int getAge() {
         return age;
@@ -12,11 +12,11 @@ public class DummyPerson {
         this.age = age;
     }
 
-    public DummyPerson getMother() {
+    public DummyMother getMother() {
         return mother;
     }
 
-    public void setMother(DummyPerson mother) {
+    public void setMother(DummyMother mother) {
         this.mother = mother;
     }
 
@@ -24,9 +24,7 @@ public class DummyPerson {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-
-        DummyPerson that = (DummyPerson) o;
-
+        DummyMother that = (DummyMother) o;
         if (getAge() != that.getAge()) return false;
         return getMother() != null ? getMother().equals(that.getMother()) : that.getMother() == null;
     }

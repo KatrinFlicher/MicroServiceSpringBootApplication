@@ -22,7 +22,7 @@ public class MapConverter {
             if (type.isPrimitive() || type.getAnnotation(ConvertibleToMap.class) != null) {
                 checkAccess(field);
                 if (!type.isPrimitive()) {
-                    if (objectClass.isInstance(field.getType())) {
+                    if (field.getType().isAssignableFrom(objectClass)) {
                         throw new IllegalArgumentException("Infinite Recursion");
                     }
                     valueField = toMap(field.get(object));
@@ -30,6 +30,7 @@ public class MapConverter {
                     valueField = field.get(object);
                 }
                 mapFields.put(field.getName(), valueField);
+
             }
         }
         Map<String, Map<String, Object>> map = new HashMap<>();
