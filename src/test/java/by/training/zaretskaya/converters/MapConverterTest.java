@@ -1,9 +1,6 @@
 package by.training.zaretskaya.converters;
 
-import by.training.zaretskaya.beans.DummyMother;
-import by.training.zaretskaya.beans.DummyPerson;
-import by.training.zaretskaya.beans.Person;
-import by.training.zaretskaya.beans.Pet;
+import by.training.zaretskaya.beans.*;
 import org.junit.Test;
 
 import java.util.Map;

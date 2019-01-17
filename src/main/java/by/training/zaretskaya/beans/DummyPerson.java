@@ -1,5 +1,8 @@
 package by.training.zaretskaya.beans;
 
+import by.training.zaretskaya.annotations.ConvertibleToMap;
+
+@ConvertibleToMap
 public class DummyPerson {
     private int age;
     private DummyMother mother;
