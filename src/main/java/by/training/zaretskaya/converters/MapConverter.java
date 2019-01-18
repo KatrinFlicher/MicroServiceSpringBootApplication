@@ -4,33 +4,38 @@ import by.training.zaretskaya.annotations.ConvertibleToMap;
 
 import java.lang.reflect.Field;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
 public class MapConverter {
 
     public static Map<String, Map<String, Object>> toMap(Object object) throws IllegalAccessException {
-        Class<?> objectClass = object.getClass();
-        if (objectClass.getAnnotation(ConvertibleToMap.class) == null) {
+        if (!object.getClass().isAnnotationPresent(ConvertibleToMap.class)) {
             throw new IllegalArgumentException("Class hasn't got annotation.");
         }
+        HashSet<Object> state = new HashSet<>();
+        return toMap(object, state);
+    }
+
+    private static Map<String, Map<String, Object>> toMap(Object object, HashSet<Object> state)
+            throws IllegalAccessException {
+        Class<?> objectClass = object.getClass();
         Field[] fields = objectClass.getDeclaredFields();
         Map<String, Object> mapFields = new HashMap<>();
         for (Field field : fields) {
-            Object valueField;
             Class<?> type = field.getType();
             if (type.isPrimitive() || type.isAnnotationPresent(ConvertibleToMap.class)) {
                 checkAccess(field);
+                Object valueField = field.get(object);
                 if (!type.isPrimitive()) {
-                    if (objectClass.isAssignableFrom(type)) {
+                    if (objectClass.isAssignableFrom(type) || state.contains(valueField)) {
                         throw new IllegalArgumentException("Infinite Recursion");
                     }
-                    valueField = toMap(field.get(object));
-                } else {
-                    valueField = field.get(object);
+                    state.add(object);
+                    valueField = toMap(valueField, state);
                 }
                 mapFields.put(field.getName(), valueField);
-
             }
         }
         Map<String, Map<String, Object>> map = new HashMap<>();

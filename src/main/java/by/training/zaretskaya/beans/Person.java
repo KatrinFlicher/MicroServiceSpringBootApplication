@@ -7,7 +7,6 @@ import by.training.zaretskaya.annotations.ConvertibleToMap;
 public class Person {
     private String name;
     private int age;
-    //This field is also annotated. Annotation is situated in class Pet.
     private Pet pet;
 
     public Person() {

@@ -1,12 +1,7 @@
 package by.training.zaretskaya.converters;
 
-import by.training.zaretskaya.beans.DummyMother;
-import by.training.zaretskaya.beans.DummyPerson;
-import by.training.zaretskaya.beans.Person;
-import by.training.zaretskaya.beans.Pet;
+import by.training.zaretskaya.beans.*;
 import org.junit.Test;
-
-import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
 
@@ -21,10 +16,21 @@ public class MapConverterTest {
     }
 
     @Test(expected = IllegalArgumentException.class)
-    public void testPossibilityOfInfiniteRecursionInConverter() throws IllegalAccessException {
+    public void testInfiniteRecursionIfFieldIsInheritorOfClassOfObject() throws IllegalAccessException {
         DummyPerson dummyPerson = new DummyPerson();
         dummyPerson.setAge(10);
         dummyPerson.setMother(new DummyMother());
-        Map<String, Map<String, Object>> mapFromObject = MapConverter.toMap(dummyPerson);
+        MapConverter.toMap(dummyPerson);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testInfiniteRecursionIfСompositionIsWrong() throws IllegalAccessException {
+        A a = new A();
+        B b = new B();
+        C c = new C();
+        a.setB(b);
+        b.setC(c);
+        c.setA(a);
+        MapConverter.toMap(a);
     }
 }
