@@ -22,14 +22,14 @@ public class LRUCacheImpl implements ICache {
     }
 
     //The method provides constant-time performance O(1)
-    public int size() {
+    public synchronized int size() {
         return cacheMap.size();
     }
 
     //The method provides constant-time performance O(1)
     // since methods included in it have performance О(1)(methods invalidate(),
     // list.add(key) and map.put(key, value).
-    public Object put(Object key, Object value) {
+    public synchronized Object put(Object key, Object value) {
         if (!contains(key)) {
             if (size() == sizeMax) {
                 invalidate();
@@ -40,13 +40,13 @@ public class LRUCacheImpl implements ICache {
     }
 
     //The method provides constant-time performance O(1)
-    public boolean contains(Object key) {
+    public synchronized boolean contains(Object key) {
         return cacheMap.containsKey(key);
     }
 
     //The method provides constant-time performance O(1)
     // since methods included in it have performance О(1)(methods list.removeFirst(), map.remove(key)).
-    public Object invalidate() {
+    public synchronized Object invalidate() {
         Object keyRemoved = listRecentKeys.removeFirst();
         return cacheMap.remove(keyRemoved);
     }
@@ -54,7 +54,7 @@ public class LRUCacheImpl implements ICache {
     //The method provides linear performance O(n)
     // since methods included in it have performance О(1)(methods list.add(key) and map.get(key) have O(1),
     // but list.remove(object) have O(n)(we search by value not by id)).
-    public Object get(Object key) {
+    public synchronized Object get(Object key) {
         if (contains(key)) {
             listRecentKeys.remove(key);
             listRecentKeys.add(key);
@@ -65,11 +65,17 @@ public class LRUCacheImpl implements ICache {
     }
 
     //The method provides performance from O(1) to O(n) depending on the running method.
-    public Object putIfAbsent(Object key, Object value) {
+    public synchronized Object putIfAbsent(Object key, Object value) {
         if (!contains(key)) {
             return put(key, value);
         } else {
             return get(key);
         }
+    }
+
+    @Override
+    public synchronized Object remove(Object key) {
+        listRecentKeys.remove(key);
+        return cacheMap.remove(key);
     }
 }

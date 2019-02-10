@@ -23,13 +23,13 @@ public class LFUCacheImpl implements ICache {
     }
 
     //The method provides constant-time performance O(1)
-    public int size() {
+    public synchronized int size() {
         return cacheMap.size();
     }
 
     //The method provides linear performance O(n)
     // since method invalidate() has O(n) and method map.put(key, value) has O(1).
-    public Object put(Object key, Object value) {
+    public synchronized Object put(Object key, Object value) {
         if (!contains(key)) {
             if (size() == sizeMax) {
                 invalidate();
@@ -40,13 +40,13 @@ public class LFUCacheImpl implements ICache {
     }
 
     //The method provides constant-time performance O(1)
-    public boolean contains(Object key) {
+    public synchronized boolean contains(Object key) {
         return cacheMap.containsKey(key);
     }
 
     //The method provides constant-time performance O(1)
     // since methods included in it have performance О(1)(methods contains(key),map.put(key,value), map.get(key)).
-    public Object get(Object key) {
+    public synchronized Object get(Object key) {
         if (contains(key)) {
             Integer frequency = mapFrequencies.get(key);
             frequency++;
@@ -60,7 +60,7 @@ public class LFUCacheImpl implements ICache {
     //The method provides linear performance O(n)
     // since method Collections.min depends on size of collection and has linear performance О(n)
     // and method map.remove(key) has O(1)).
-    public Object invalidate() {
+    public synchronized Object invalidate() {
         Map.Entry<Object, Integer> keyWithMinFrequency = Collections.min(mapFrequencies.entrySet(),
                 Comparator.comparing(Map.Entry::getValue));
         mapFrequencies.remove(keyWithMinFrequency.getKey());
@@ -68,11 +68,17 @@ public class LFUCacheImpl implements ICache {
     }
 
     //The method provides performance from O(1) to O(n) depending on the running method.
-    public Object putIfAbsent(Object key, Object value) {
+    public synchronized Object putIfAbsent(Object key, Object value) {
         if (!contains(key)) {
             return put(key, value);
         } else {
             return get(key);
         }
+    }
+
+    @Override
+    public synchronized Object remove(Object key) {
+        mapFrequencies.remove(key);
+        return cacheMap.remove(key);
     }
 }

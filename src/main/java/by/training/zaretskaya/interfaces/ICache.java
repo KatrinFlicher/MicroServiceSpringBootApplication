@@ -44,4 +44,10 @@ public interface ICache <K,V> {
      * @param value - value to be associated with the specified key
      * */
     V putIfAbsent(K key, V value);
+
+    /**
+     * Removes the mapping for a key from this cache if it is present.
+     * @param key - key whose mapping is to be removed from the cache
+     * */
+    V remove(K key);
 }
