@@ -20,7 +20,7 @@ import java.util.regex.Pattern;
 @Component
 @Qualifier("DocumentDao")
 @Transactional
-public class DocumentDaoImpl implements DocumentDAO {
+public class DocumentDaoImpl implements DocumentDAO<Document> {
 
     @Autowired
     JdbcTemplate jdbcTemplate;

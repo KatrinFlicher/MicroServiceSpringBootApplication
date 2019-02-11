@@ -14,13 +14,13 @@ import java.util.Map;
 
 @Component
 @Qualifier("CollectionCachedDAO")
-public class CollectionCachedDAOImpl implements CollectionDAO {
+public class CollectionCachedDAOImpl implements CollectionDAO<Collection> {
 
     Map<String, Collection> mapCollection = new HashMap<>();
 
     @Autowired
     @Qualifier("CollectionDAO")
-    CollectionDAO collectionDao;
+    CollectionDAO<Collection> collectionDao;
 
     @PostConstruct
     private void fillMap() {
@@ -46,7 +46,7 @@ public class CollectionCachedDAOImpl implements CollectionDAO {
     @Override
     public Collection getById(String name) {
         if (!mapCollection.containsKey(name)) {
-            Collection collection = (Collection) collectionDao.getById(name);
+            Collection collection = collectionDao.getById(name);
             mapCollection.put(collection.getName(), collection);
         }
         return mapCollection.get(name);

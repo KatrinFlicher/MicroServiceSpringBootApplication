@@ -1,15 +1,13 @@
 package by.training.zaretskaya.interfaces;
 
 
-import by.training.zaretskaya.models.Collection;
-
 import java.util.List;
 
 
-public interface CollectionDAO {
-    void create(Collection collection);
+public interface CollectionDAO<C> {
+    void create(C collection);
 
-    Collection getById(String name);
+    C getById(String name);
 
     void delete(String name);
 
@@ -19,5 +17,5 @@ public interface CollectionDAO {
 
     void updateAlgorithm(String name, String algorithm);
 
-    List<Collection> list(int page, int size);
+    List<C> list(int page, int size);
 }

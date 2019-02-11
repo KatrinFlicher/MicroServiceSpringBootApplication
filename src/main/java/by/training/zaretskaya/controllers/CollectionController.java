@@ -16,7 +16,7 @@ import java.util.List;
 public class CollectionController {
 
     @Autowired
-    ICollectionService collectionService;
+    ICollectionService<Collection> collectionService;
 
     @PostMapping
     public ResponseEntity createCollection(@RequestBody Collection collection) {

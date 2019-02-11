@@ -22,7 +22,7 @@ import java.util.regex.Pattern;
 @Component
 @Qualifier("CollectionDAO")
 @Transactional
-public class CollectionDaoImpl implements CollectionDAO {
+public class CollectionDaoImpl implements CollectionDAO<Collection> {
 
     @Autowired
     DataSource dataSource;

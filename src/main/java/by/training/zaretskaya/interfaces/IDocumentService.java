@@ -1,17 +1,15 @@
 package by.training.zaretskaya.interfaces;
 
-import by.training.zaretskaya.models.Document;
-
 import java.util.List;
 
-public interface IDocumentService {
-    void create(String nameCollection, Document document);
+public interface IDocumentService<D> {
+    void create(String nameCollection, D document);
 
-    Document get(String nameCollection, String nameResource);
+    D get(String nameCollection, String nameResource);
 
     void delete(String nameCollection, String nameResource);
 
-    void update(String nameCollection, String nameResource, Document document);
+    void update(String nameCollection, String nameResource, D document);
 
     List list(String nameCollection, int page, int size);
 }

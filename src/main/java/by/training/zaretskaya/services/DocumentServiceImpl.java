@@ -7,6 +7,7 @@ import by.training.zaretskaya.exception.ResourceIsExistException;
 import by.training.zaretskaya.interfaces.CollectionDAO;
 import by.training.zaretskaya.interfaces.DocumentDAO;
 import by.training.zaretskaya.interfaces.IDocumentService;
+import by.training.zaretskaya.models.Collection;
 import by.training.zaretskaya.models.Document;
 import org.everit.json.schema.Schema;
 import org.everit.json.schema.ValidationException;
@@ -19,15 +20,15 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 @Service
-public class DocumentServiceImpl implements IDocumentService {
+public class DocumentServiceImpl implements IDocumentService<Document> {
 
     @Autowired
     @Qualifier("CollectionCachedDAO")
-    CollectionDAO collectionDAO;
+    CollectionDAO<Collection> collectionDAO;
 
     @Autowired
     @Qualifier("DocumentCachedDAO")
-    DocumentDAO documentDAO;
+    DocumentDAO<Document> documentDAO;
 
 
     @Override

@@ -17,7 +17,7 @@ import java.util.List;
 public class DocumentController {
 
     @Autowired
-    IDocumentService documentService;
+    IDocumentService<Document> documentService;
 
     @PostMapping
     public ResponseEntity createDocument(@PathVariable String idCollection, @RequestBody Document document) {

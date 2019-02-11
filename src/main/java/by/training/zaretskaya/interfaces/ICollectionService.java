@@ -1,14 +1,12 @@
 package by.training.zaretskaya.interfaces;
 
 
-import by.training.zaretskaya.models.Collection;
-
 import java.util.List;
 
-public interface ICollectionService {
-    void create(Collection collection);
+public interface ICollectionService<C> {
+    void create(C collection);
 
-    Collection getById(String name);
+    C getById(String name);
 
     void delete(String name);
 
@@ -18,5 +16,5 @@ public interface ICollectionService {
 
     void updateAlgorithm(String name, String algorithm);
 
-    List<Collection> listCollections(int page, int size);
+    List<C> listCollections(int page, int size);
 }

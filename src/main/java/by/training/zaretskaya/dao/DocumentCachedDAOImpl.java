@@ -3,6 +3,7 @@ package by.training.zaretskaya.dao;
 import by.training.zaretskaya.interfaces.CollectionDAO;
 import by.training.zaretskaya.interfaces.DocumentDAO;
 import by.training.zaretskaya.interfaces.ICache;
+import by.training.zaretskaya.models.Collection;
 import by.training.zaretskaya.models.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -12,15 +13,15 @@ import java.util.List;
 
 @Component
 @Qualifier("DocumentCachedDAO")
-public class DocumentCachedDAOImpl implements DocumentDAO {
+public class DocumentCachedDAOImpl implements DocumentDAO<Document> {
 
     @Autowired
     @Qualifier("DocumentDao")
-    DocumentDAO documentDAO;
+    DocumentDAO<Document> documentDAO;
 
     @Autowired
     @Qualifier("CollectionCachedDAO")
-    CollectionDAO collectionDAO;
+    CollectionDAO<Collection> collectionDAO;
 
     @Override
     public void create(String nameCollection, Document document) {
@@ -37,8 +38,8 @@ public class DocumentCachedDAOImpl implements DocumentDAO {
                 .getById(nameCollection)
                 .getCache();
         if (!cache.contains(nameResource)) {
-            System.out.println("get from db");
-            Document document = documentDAO.get(nameCollection, nameResource);
+//            System.out.println("get from db");
+            Document document = (Document) documentDAO.get(nameCollection, nameResource);
             cache.put(document.getKey(), document);
         }
         return cache.get(nameResource);

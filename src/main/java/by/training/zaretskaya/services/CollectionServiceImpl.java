@@ -16,7 +16,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 @Service
-public class CollectionServiceImpl implements ICollectionService {
+public class CollectionServiceImpl implements ICollectionService<Collection> {
 
     @Autowired
     @Qualifier("CollectionCachedDAO")
@@ -36,7 +36,7 @@ public class CollectionServiceImpl implements ICollectionService {
 
     @Override
     public Collection getById(String name) {
-        return collectionDAO.getById(name);
+        return (Collection) collectionDAO.getById(name);
     }
 
     @Override
