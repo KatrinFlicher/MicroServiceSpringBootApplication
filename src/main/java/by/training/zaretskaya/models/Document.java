@@ -1,13 +1,15 @@
 package by.training.zaretskaya.models;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 public class Document {
     private String key;
-    private Object value;
+    private String value;
 
     public Document() {
     }
 
-    public Document(String key, Object value) {
+    public Document(String key, String value) {
         this.key = key;
         this.value = value;
     }
@@ -20,7 +22,7 @@ public class Document {
         this.key = key;
     }
 
-    public Object getValue() {
+    public String getValue() {
         return value;
     }
 

@@ -73,13 +73,7 @@ public class DocumentServiceImpl implements IDocumentService<Document> {
         JSONObject jsonSchema = new JSONObject(jsonSchemaString);
         Schema schema = SchemaLoader.load(jsonSchema);
         try {
-            if (document.getValue().getClass() == String.class) {
-                schema.validate(document.getValue());
-            } else {
-                JSONObject jsonSubject = new JSONObject(document);
-                schema.validate(jsonSubject);
-            }
-
+            schema.validate(document.getValue());
         } catch (ValidationException exception) {
             throw new DocumentIsInvalidUnderTheScheme();
         }

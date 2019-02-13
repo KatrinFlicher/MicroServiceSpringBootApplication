@@ -57,10 +57,11 @@ public class DocumentCachedDAOImpl implements DocumentDAO<Document> {
     @Override
     public void update(String nameCollection, String nameResource, Document document) {
         documentDAO.update(nameCollection, nameResource, document);
-        collectionDAO
+        Document oldDocument = collectionDAO
                 .getById(nameCollection)
                 .getCache()
-                .put(document.getKey(), document);
+                .get(nameResource);
+        oldDocument.setValue(document.getValue());
     }
 
     @Override
