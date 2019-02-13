@@ -29,12 +29,14 @@ import static org.junit.Assert.assertEquals;
 @WebMvcTest(value = DocumentController.class, secure = false)
 public class DocumentControllerTest {
 
-    Document mockDocument = new Document("Popova", new Document("Ivanov", "Intern 2 cat"));
-    String exampleDocumentJson = "{\"key\": \"Ivanov\",\"value\":\"Intern 2 cat\"}";
+    Document mockDocument = new Document("Popova", "Intern 2 cat");
+    String exampleDocumentJson = "{\"key\": \"Popova\",\"value\":\"Intern 2 cat\"}";
+    String expectedValue = "Intern 2 cat";
     @Autowired
     private MockMvc mockMvc;
     @MockBean
     private IDocumentService documentService;
+
 
     @Test
     public void testGetDocument() throws Exception {
@@ -42,8 +44,10 @@ public class DocumentControllerTest {
                 documentService.get(Mockito.anyString(), Mockito.anyString())).thenReturn(mockDocument);
         MockHttpServletRequestBuilder requestBuilder = MockMvcRequestBuilders.get(
                 "/rest/doctors/docs/Popova").accept(MediaType.APPLICATION_JSON);
+
         MvcResult result = mockMvc.perform(requestBuilder).andReturn();
-        JSONAssert.assertEquals(exampleDocumentJson, result.getResponse().getContentAsString(), false);
+        assertEquals(expectedValue, result.getResponse().getContentAsString());
+        //JSONAssert.assertEquals(exampleDocumentJson, result.getResponse().getContentAsString(), false);
     }
 
 
@@ -59,7 +63,7 @@ public class DocumentControllerTest {
         MockHttpServletResponse response = result.getResponse();
         Mockito.verify(documentService).create(Mockito.anyString(), Mockito.any(Document.class));
         assertEquals(HttpStatus.CREATED.value(), response.getStatus());
-        assertEquals("http://localhost/rest/doctors/docs/Ivanov",
+        assertEquals("http://localhost/rest/doctors/docs/Popova",
                 response.getHeader(HttpHeaders.LOCATION));
     }
 
@@ -91,9 +95,8 @@ public class DocumentControllerTest {
 
     @Test
     public void listDocuments() throws Exception {
-        Document document = new Document("Ivanov", "Intern 2 cat");
         String expected = "[" + exampleDocumentJson + "," + exampleDocumentJson + "," + exampleDocumentJson + "]";
-        List<Document> documents = Arrays.asList(document, document, document);
+        List<Document> documents = Arrays.asList(mockDocument, mockDocument, mockDocument);
         Mockito.when(documentService
                 .list(Mockito.anyString(), Mockito.anyInt(), Mockito.anyInt()))
                 .thenReturn(documents);
