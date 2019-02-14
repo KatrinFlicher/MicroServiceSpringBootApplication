@@ -1,6 +1,7 @@
 package by.training.zaretskaya.controllers;
 
 
+import by.training.zaretskaya.constants.Constants;
 import by.training.zaretskaya.interfaces.IDocumentService;
 import by.training.zaretskaya.models.Document;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,8 +54,8 @@ public class DocumentController {
 
     @GetMapping
     List listDocuments(@PathVariable String idCollection,
-                       @RequestParam(required = false, defaultValue = "1") int page,
-                       @RequestParam(required = false, defaultValue = "10") int size) {
+                       @RequestParam(required = false, defaultValue = Constants.START_PAGE) int page,
+                       @RequestParam(required = false, defaultValue = Constants.DEFAULT_LIMIT_SIZE) int size) {
 
         return documentService.list(idCollection, page, size);
     }

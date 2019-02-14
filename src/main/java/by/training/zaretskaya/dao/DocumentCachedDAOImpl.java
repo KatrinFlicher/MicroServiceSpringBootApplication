@@ -25,10 +25,9 @@ public class DocumentCachedDAOImpl implements DocumentDAO<Document> {
 
     @Override
     public void create(String nameCollection, Document document) {
+        Collection collection = collectionDAO.getById(nameCollection);
         documentDAO.create(nameCollection, document);
-        collectionDAO
-                .getById(nameCollection)
-                .getCache()
+        collection.getCache()
                 .put(document.getKey(), document);
     }
 
@@ -47,19 +46,17 @@ public class DocumentCachedDAOImpl implements DocumentDAO<Document> {
 
     @Override
     public void delete(String nameCollection, String nameResource) {
+        Collection collection = collectionDAO.getById(nameCollection);
         documentDAO.delete(nameCollection, nameResource);
-        collectionDAO
-                .getById(nameCollection)
-                .getCache()
+        collection.getCache()
                 .remove(nameResource);
     }
 
     @Override
     public void update(String nameCollection, String nameResource, Document document) {
+        Collection collection = collectionDAO.getById(nameCollection);
         documentDAO.update(nameCollection, nameResource, document);
-        Document oldDocument = collectionDAO
-                .getById(nameCollection)
-                .getCache()
+        Document oldDocument = collection.getCache()
                 .get(nameResource);
         oldDocument.setValue(document.getValue());
     }
@@ -67,7 +64,6 @@ public class DocumentCachedDAOImpl implements DocumentDAO<Document> {
     @Override
     public List list(String nameCollection, int page, int size) {
         return documentDAO.list(nameCollection, page, size);
-
     }
 
 }

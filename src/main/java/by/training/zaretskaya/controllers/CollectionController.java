@@ -1,5 +1,6 @@
 package by.training.zaretskaya.controllers;
 
+import by.training.zaretskaya.constants.Constants;
 import by.training.zaretskaya.interfaces.ICollectionService;
 import by.training.zaretskaya.models.Collection;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,8 +31,11 @@ public class CollectionController {
     }
 
     @GetMapping
-    public List<Collection> listCollections(@RequestParam(required = false, defaultValue = "1") int page,
-                                            @RequestParam(required = false, defaultValue = "5") int size) {
+    public List<Collection> listCollections
+            (@RequestParam(required = false,
+                    defaultValue = Constants.START_PAGE) int page,
+             @RequestParam(required = false,
+                     defaultValue = Constants.DEFAULT_LIMIT_SIZE) int size) {
         return collectionService.listCollections(page, size);
     }
 
