@@ -25,10 +25,7 @@ public class DocumentCachedDAOImpl implements DocumentDAO<Document> {
 
     @Override
     public void create(String nameCollection, Document document) {
-        Collection collection = collectionDAO.getById(nameCollection);
         documentDAO.create(nameCollection, document);
-        collection.getCache()
-                .put(document.getKey(), document);
     }
 
     @Override
@@ -37,33 +34,31 @@ public class DocumentCachedDAOImpl implements DocumentDAO<Document> {
                 .getById(nameCollection)
                 .getCache();
         if (!cache.contains(nameResource)) {
-//            System.out.println("get from db");
-            Document document = (Document) documentDAO.get(nameCollection, nameResource);
-            cache.put(document.getKey(), document);
+            Document document = documentDAO.get(nameCollection, nameResource);
+            cache.put(nameResource, document);
         }
         return cache.get(nameResource);
     }
 
     @Override
     public void delete(String nameCollection, String nameResource) {
-        Collection collection = collectionDAO.getById(nameCollection);
         documentDAO.delete(nameCollection, nameResource);
-        collection.getCache()
-                .remove(nameResource);
+        Collection collection = collectionDAO.getById(nameCollection);
+        collection.getCache().remove(nameResource);
     }
 
     @Override
     public void update(String nameCollection, String nameResource, Document document) {
-        Collection collection = collectionDAO.getById(nameCollection);
         documentDAO.update(nameCollection, nameResource, document);
-        Document oldDocument = collection.getCache()
-                .get(nameResource);
-        oldDocument.setValue(document.getValue());
+        ICache<String, Document> cache = collectionDAO.getById(nameCollection).getCache();
+        if (cache.contains(nameResource)) {
+            String newValue = document.getValue();
+            cache.get(nameResource).setKey(newValue);
+        }
     }
 
     @Override
     public List list(String nameCollection, int page, int size) {
         return documentDAO.list(nameCollection, page, size);
     }
-
 }

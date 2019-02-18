@@ -7,13 +7,10 @@ import by.training.zaretskaya.exception.CollectionNameNotSupportedException;
 import by.training.zaretskaya.exception.ResourceNotFoundException;
 import by.training.zaretskaya.interfaces.CollectionDAO;
 import by.training.zaretskaya.models.Collection;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
 import javax.persistence.*;
-import javax.sql.DataSource;
 import javax.transaction.Transactional;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -23,12 +20,6 @@ import java.util.regex.Pattern;
 @Qualifier("CollectionDAO")
 @Transactional
 public class CollectionDaoImpl implements CollectionDAO<Collection> {
-
-    @Autowired
-    DataSource dataSource;
-
-    @Autowired
-    JdbcTemplate jdbcTemplate;
 
     @PersistenceUnit
     private EntityManagerFactory managerFactory;
@@ -67,10 +58,12 @@ public class CollectionDaoImpl implements CollectionDAO<Collection> {
     @Override
     public void delete(String name) {
         checkNameTable(name);
+        Collection collection = getById(name);
+        entityManager.remove(collection);
+        entityManager.flush();
         String sqlQuery = SQLConstants.DROP_NAMED_DOCUMENT_TABLE
                 .replace(SQLConstants.MOCK_NAME_COLLECTION, name);
         entityManager.createNativeQuery(sqlQuery).executeUpdate();
-        entityManager.remove(getById(name));
         entityManager.flush();
     }
 
@@ -94,14 +87,15 @@ public class CollectionDaoImpl implements CollectionDAO<Collection> {
     public void updateCacheLimit(String name, int cacheLimit) {
         Collection collection = getById(name);
         collection.setCacheLimit(cacheLimit);
-        entityManager.persist(collection);
+        entityManager.refresh(collection);
+        entityManager.flush();
     }
 
     @Override
     public void updateAlgorithm(String name, String algorithm) {
         Collection collection = getById(name);
         collection.setAlgorithm(algorithm);
-        entityManager.persist(collection);
+        entityManager.refresh(collection);
         entityManager.flush();
     }
 
@@ -109,7 +103,8 @@ public class CollectionDaoImpl implements CollectionDAO<Collection> {
     @SuppressWarnings("JpaQueryApiInspection")
     @Override
     public List<Collection> list(int page, int size) {
-        TypedQuery<Collection> query = entityManager.createNamedQuery("Collection.findAllCollections", Collection.class);
+        TypedQuery<Collection> query = entityManager
+                .createNamedQuery("Collection.findAllCollections", Collection.class);
         query.setFirstResult((page - 1) * size);
         query.setMaxResults(size);
         return query.getResultList();

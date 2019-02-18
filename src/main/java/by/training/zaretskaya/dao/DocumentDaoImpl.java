@@ -2,20 +2,18 @@ package by.training.zaretskaya.dao;
 
 import by.training.zaretskaya.constants.Constants;
 import by.training.zaretskaya.constants.SQLConstants;
-import by.training.zaretskaya.exception.CollectionNameNotSupportedException;
-import by.training.zaretskaya.exception.DocumentNotFoundException;
+import by.training.zaretskaya.exception.ResourceNotFoundException;
 import by.training.zaretskaya.interfaces.DocumentDAO;
 import by.training.zaretskaya.models.Document;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
 import javax.transaction.Transactional;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 @Component
 @Qualifier("DocumentDao")
@@ -24,20 +22,6 @@ public class DocumentDaoImpl implements DocumentDAO<Document> {
 
     @Autowired
     JdbcTemplate jdbcTemplate;
-
-    public DocumentDaoImpl() {
-    }
-
-    private String prepareSqlQuery(String nameTable, String query) {
-        Pattern p = Pattern.compile(Constants.PATTERN_FOR_NAME_COLLECTION);
-        Matcher m = p.matcher(nameTable);
-        if (!m.matches()) {
-            throw new CollectionNameNotSupportedException();
-        }
-        String preparedQuery = query.replace(SQLConstants.MOCK_NAME_COLLECTION, nameTable);
-        System.out.println(preparedQuery);
-        return preparedQuery;
-    }
 
     @Override
     public void create(String nameCollection, Document document) {
@@ -54,7 +38,7 @@ public class DocumentDaoImpl implements DocumentDAO<Document> {
                     (resultSet, i) -> new Document(resultSet.getString(SQLConstants.DOCUMENT_KEY),
                             resultSet.getString(SQLConstants.DOCUMENT_VALUE)));
         } catch (EmptyResultDataAccessException e) {
-            throw new DocumentNotFoundException(Constants.RESOURCE_DOCUMENT, nameResource);
+            throw new ResourceNotFoundException(Constants.RESOURCE_DOCUMENT, nameResource);
         }
     }
 
@@ -72,12 +56,14 @@ public class DocumentDaoImpl implements DocumentDAO<Document> {
 
     @Override
     public List<Object> list(String nameCollection, int page, int size) {
-//        String sqlQuery = prepareSqlQuery(nameCollection, SQLConstants.SELECT_ALL_DOCUMENTS_FROM_TABLE);
-//        return jdbcTemplate.query(sqlQuery, new Object[]{size, (page - 1) * size},
-//                new BeanPropertyRowMapper(Document.class));
         String sqlQuery = prepareSqlQuery(nameCollection, SQLConstants.SELECT_ALL_DOCUMENTS_FROM_TABLE);
         return jdbcTemplate.query(sqlQuery, new Object[]{size, (page - 1) * size},
-                (resultSet, rowNum) -> new String(resultSet.getString(SQLConstants.DOCUMENT_VALUE)));
+                new BeanPropertyRowMapper(Document.class));
     }
 
+    private String prepareSqlQuery(String nameTable, String query) {
+        String preparedQuery = query.replace(SQLConstants.MOCK_NAME_COLLECTION, nameTable);
+        System.out.println(preparedQuery);
+        return preparedQuery;
+    }
 }

@@ -32,15 +32,14 @@ public class DocumentController {
     }
 
     @GetMapping("/{idDoc}")
-    Object getDocument(@PathVariable String idCollection, @PathVariable String idDoc) {
-        return documentService.get(idCollection, idDoc).getValue();
+    Document getDocument(@PathVariable String idCollection, @PathVariable String idDoc) {
+        return documentService.get(idCollection, idDoc);
     }
 
     @DeleteMapping("/{idDoc}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     void deleteDocument(@PathVariable String idCollection, @PathVariable String idDoc) {
         documentService.delete(idCollection, idDoc);
-
     }
 
     @PutMapping("/{idDoc}")
@@ -49,15 +48,12 @@ public class DocumentController {
                         @PathVariable String idDoc,
                         @RequestBody Document document) {
         documentService.update(idCollection, idDoc, document);
-
     }
 
     @GetMapping
     List listDocuments(@PathVariable String idCollection,
                        @RequestParam(required = false, defaultValue = Constants.START_PAGE) int page,
                        @RequestParam(required = false, defaultValue = Constants.DEFAULT_LIMIT_SIZE) int size) {
-
         return documentService.list(idCollection, page, size);
     }
-
 }
