@@ -23,18 +23,18 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 @RunWith(SpringRunner.class)
 @WebMvcTest(value = CollectionController.class, secure = false)
 public class CollectionControllerTest {
 
-    Collection mockCollection = new Collection("cats", 12, "LFU", "{\n" +
+    private Collection mockCollection = new Collection("cats", 12, "LFU", "{\n" +
             "  \"type\": \"string\",\n" +
             "  \"minLength\": 2,\n" +
             "  \"maxLength\": 3\n" +
             "}");
-    String exampleCollectionJson = " {\n" +
+    private String exampleCollectionJson = " {\n" +
             "        \"name\": \"cats\",\n" +
             "        \"cacheLimit\": 12,\n" +
             "        \"algorithm\": \"LFU\"\n" +
