@@ -3,6 +3,7 @@ package by.training.zaretskaya.distribution;
 import by.training.zaretskaya.config.Configuration;
 import by.training.zaretskaya.config.Node;
 import by.training.zaretskaya.constants.Constants;
+import by.training.zaretskaya.exception.OperationFailedException;
 import by.training.zaretskaya.exception.ResourceNotFoundException;
 import by.training.zaretskaya.models.Collection;
 import org.springframework.http.HttpEntity;
@@ -90,6 +91,29 @@ public class DistributedService {
             return;
         }
     }
+
+//    public void sendPost(Collection collection, String counterStr, String flagRollback) {
+//        List<Node> list = listGroups.get(defineIdGroup(collection.getName()));
+//        int positionNodeToSend = 0;
+//        if (!Boolean.valueOf(flagRollback)) {
+//            incrementCounter(counterStr);
+//            if (counter == list.size()) {
+//                return;
+//            }
+//            positionNodeToSend = defineNextNode(list);
+//        } else {
+//            decrementCounter(counterStr);
+//            if (counter == 0) {
+//                throw new OperationFailedException();
+//            }
+//            positionNodeToSend = definePreviousNode(list);
+//        }
+//        restTemplate = new RestTemplate();
+//        ResponseEntity<Collection> responseEntity = restTemplate
+//                .postForEntity(list.get(positionNodeToSend).getHost() + NAME_APPLICATION,
+//                        getHttpEntity(collection, getHeaders(counter, flagRollback)), Collection.class);
+//        checkStatusCode(responseEntity);
+//    }
 
     public void sendDelete(String id, String counterStr) {
         List<Node> list = listGroups.get(defineIdGroup(id));
