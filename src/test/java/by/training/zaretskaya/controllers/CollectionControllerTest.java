@@ -40,6 +40,12 @@ public class CollectionControllerTest {
             "        \"algorithm\": \"LFU\"\n" +
             "    }";
 
+    String jo = "{\n" +
+            "  \"type\": \"string\",\n" +
+            "  \"minLength\": 2,\n" +
+            "  \"maxLength\": 30\n" +
+            "}";
+
     @Autowired
     private MockMvc mockMvc;
     @MockBean

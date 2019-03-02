@@ -1,0 +1,10 @@
+{
+  "groups": [
+    { "id":"0",
+      "list": [
+        {"name":"node1","host":"http://localhost:8081"},
+        {"name":"node2","host":"http://localhost:8082"},
+        {"name":"node3","host":"http://localhost:8083"}
+      ]}
+  ]
+}
