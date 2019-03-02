@@ -76,6 +76,31 @@ public class DistributedService {
         }
     }
 
+
+//    public void sendUpdate(String id, String counterStr, Collection collection,
+//                           String variableField, String flagRollback) {
+//        List<Node> list = listGroups.get(defineIdGroup(id));
+//        int positionNodeToSend = 0;
+//        if (!Boolean.valueOf(flagRollback)) {
+//            incrementCounter(counterStr);
+//            if (counter == list.size()) {
+//                return;
+//            }
+//            positionNodeToSend = defineNextNode(list);
+//        } else {
+//            decrementCounter(counterStr);
+//            if (counter == 0) {
+//                throw new OperationFailedException();
+//            }
+//            positionNodeToSend = definePreviousNode(list);
+//        }
+//        restTemplate = new RestTemplate();
+//        ResponseEntity<Collection> responseEntity = restTemplate.exchange
+//                (constructURI(list.get(positionNodeToSend).getHost(), id, variableField), HttpMethod.PUT,
+//                        getHttpEntity(collection, getHeaders(counter, flagRollback)), Collection.class);
+//        checkStatusCode(responseEntity);
+//    }
+
     public void sendPost(Collection collection, String counterStr) {
         List<Node> list = listGroups.get(defineIdGroup(collection.getName()));
         incrementCounter(counterStr);

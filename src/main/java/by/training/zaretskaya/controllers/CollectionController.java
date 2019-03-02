@@ -40,7 +40,7 @@ public class CollectionController {
         if (distributedService.isMyGroup(collection.getName())) {
             try {
                 collectionService.create(collection);
-                distributedService.sendPost(collection, counter, flagRollback);
+                distributedService.sendPostObject(collection, counter, flagRollback, collection.getName());
                 URI location = ServletUriComponentsBuilder
                         .fromCurrentRequest()
                         .path("/{idCollection}")
@@ -75,7 +75,7 @@ public class CollectionController {
                 return collectionService.getById(idCollection);
             } catch (SomethingWrongWithDataBaseException e) {
                 if (distributedService.groupConsistReplicas(idCollection)) {
-                    return (Collection) distributedService.sendGet(idCollection, counter);
+                    return (Collection) distributedService.sendGetObject(counter, idCollection);
                 } else {
                     throw e;
                 }
@@ -96,9 +96,9 @@ public class CollectionController {
         if (distributedService.isMyGroup(idCollection)) {
             try {
                 collectionService.delete(idCollection);
-                distributedService.sendDelete(idCollection, counter, flagRollback);
+                distributedService.sendDeleteObject(counter, flagRollback, idCollection);
             } catch (SomethingWrongWithDataBaseException e) {
-                rollbackService.rollback(counter, HttpMethod.DELETE);
+                rollbackService.rollback(counter, HttpMethod.DELETE, idCollection);
             }
 
         } else {
@@ -117,10 +117,10 @@ public class CollectionController {
         if (distributedService.isMyGroup(idCollection)) {
             try {
                 collectionService.updateName(idCollection, collection.getName());
-                distributedService.sendUpdate(idCollection, counter, collection,
-                        Constants.VARIABLE_FIELD_NAME, flagRollback);
+                distributedService.sendUpdateObject(collection, counter, flagRollback,
+                        idCollection, Constants.VARIABLE_FIELD_NAME);
             } catch (SomethingWrongWithDataBaseException e) {
-                rollbackService.rollback(counter, HttpMethod.PUT, Constants.VARIABLE_FIELD_NAME);
+                rollbackService.rollback(counter, HttpMethod.PUT, idCollection, Constants.VARIABLE_FIELD_NAME);
             }
         } else {
             distributedService.redirectPut(idCollection, collection, Constants.VARIABLE_FIELD_NAME);
@@ -138,10 +138,10 @@ public class CollectionController {
         if (distributedService.isMyGroup(idCollection)) {
             try {
                 collectionService.updateCacheLimit(idCollection, collection.getCacheLimit());
-                distributedService.sendUpdate(idCollection, counter, collection,
-                        Constants.VARIABLE_FIELD_LIMIT, flagRollback);
+                distributedService.sendUpdateObject(collection, counter, flagRollback,
+                        idCollection, Constants.VARIABLE_FIELD_LIMIT);
             } catch (SomethingWrongWithDataBaseException e) {
-                rollbackService.rollback(counter, HttpMethod.PUT, Constants.VARIABLE_FIELD_LIMIT);
+                rollbackService.rollback(counter, HttpMethod.PUT, idCollection, Constants.VARIABLE_FIELD_LIMIT);
             }
         } else {
             distributedService.redirectPut(idCollection, collection, Constants.VARIABLE_FIELD_LIMIT);
@@ -159,10 +159,10 @@ public class CollectionController {
         if (distributedService.isMyGroup(idCollection)) {
             try {
                 collectionService.updateAlgorithm(idCollection, collection.getAlgorithm());
-                distributedService.sendUpdate(idCollection, counter, collection,
-                        Constants.VARIABLE_FIELD_ALGORITHM, flagRollback);
+                distributedService.sendUpdateObject(collection, counter, flagRollback,
+                        idCollection, Constants.VARIABLE_FIELD_ALGORITHM);
             } catch (SomethingWrongWithDataBaseException e) {
-                rollbackService.rollback(counter, HttpMethod.PUT, Constants.VARIABLE_FIELD_ALGORITHM);
+                rollbackService.rollback(counter, HttpMethod.PUT, idCollection, Constants.VARIABLE_FIELD_ALGORITHM);
             }
         } else {
             distributedService.redirectPut(idCollection, collection, Constants.VARIABLE_FIELD_ALGORITHM);

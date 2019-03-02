@@ -15,7 +15,7 @@ public class Constants {
     public static final String INCOMPATIBLE_FORMAT_CACHE_ALGORITHM = "Format $value for cache algorithm is incompatible.";
 
     public static final String VARIABLE_FIELD_NAME = "name";
-    public static final String VARIABLE_FIELD_LIMIT = "name";
+    public static final String VARIABLE_FIELD_LIMIT = "limit";
     public static final String VARIABLE_FIELD_ALGORITHM = "algorithm";
 
     public static final String ROLLBACK_ON = "true";
