@@ -11,7 +11,7 @@ import javax.persistence.*;
 @Table(name = "collection")
 @NamedQuery(name = "Collection.findAllCollections",
         query = "SELECT c from Collection c")
-public class Collection {
+public class Collection implements Cloneable {
     @JsonIgnore
     @Transient
     private ICache<String, Document> cache;
@@ -105,5 +105,9 @@ public class Collection {
                 ", algorithm='" + algorithm + '\'' +
                 ", jsonScheme='" + jsonScheme + '\'' +
                 '}';
+    }
+
+    public Collection clone() throws CloneNotSupportedException {
+        return (Collection) super.clone();
     }
 }

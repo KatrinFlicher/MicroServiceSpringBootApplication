@@ -3,7 +3,7 @@ package by.training.zaretskaya.distribution;
 import by.training.zaretskaya.config.Configuration;
 import by.training.zaretskaya.config.Node;
 import by.training.zaretskaya.constants.Constants;
-import by.training.zaretskaya.exception.OperationFailedException;
+import by.training.zaretskaya.exception.FailedOperationException;
 import by.training.zaretskaya.exception.ResourceNotFoundException;
 import by.training.zaretskaya.models.Collection;
 import org.springframework.http.HttpEntity;
@@ -11,6 +11,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
@@ -20,7 +21,6 @@ import java.util.Map;
 public class DistributedService2 {
     private final String NAME_APPLICATION = "/rest/";
     private Map<Long, List<Node>> listGroups;
-    private int counter;
     private RestTemplate restTemplate;
 
     public DistributedService2() {
@@ -36,12 +36,11 @@ public class DistributedService2 {
         return listGroups.get(idGroup).size() == 1;
     }
 
-    public Object sendGetObject(String counterStr, String... parameters) {
+    public Object sendGetObject(int counter, String... parameters) {
         List<Node> list = listGroups.get(defineIdGroup(parameters[0]));
-        counter = Integer.valueOf(counterStr);
         counter++;
         if (counter == list.size()) {
-            if (parameters.length == 2){
+            if (parameters.length == 2) {
                 throw new ResourceNotFoundException(Constants.RESOURCE_DOCUMENT, parameters[1]);
             }
             throw new ResourceNotFoundException(Constants.RESOURCE_COLLECTION, parameters[0]);
@@ -49,64 +48,62 @@ public class DistributedService2 {
         int positionNodeToSend = defineNextNode(list);
         restTemplate = new RestTemplate();
         String uri = getURI(list.get(positionNodeToSend).getHost(), parameters);
-        //Есть сомнения, вернет ли правильный респонс
         ResponseEntity<Object> responseEntity = restTemplate
                 .exchange(uri, HttpMethod.GET, new HttpEntity<>(getHeaders(counter)), Object.class);
         if (responseEntity.getStatusCode().is2xxSuccessful()) {
             return responseEntity.getBody();
         } else {
-            if (parameters.length == 2){
+            if (parameters.length == 2) {
                 throw new ResourceNotFoundException(Constants.RESOURCE_DOCUMENT, parameters[1]);
             }
             throw new ResourceNotFoundException(Constants.RESOURCE_COLLECTION, parameters[0]);
         }
     }
 
-    public void sendUpdateObject(Object object, String counterStr, String flagRollback,
-                                 String... parameters) {
+    public void sendUpdateObject(Object object, int counter, boolean flagRollback,
+                                 String... parameters) throws ResourceAccessException {
         List<Node> list = listGroups.get(defineIdGroup(parameters[0]));
         int positionNodeToSend = 0;
-        if (!Boolean.valueOf(flagRollback)) {
-            incrementCounter(counterStr);
+        if (!flagRollback) {
+            counter++;
             if (counter == list.size()) {
                 return;
             }
             positionNodeToSend = defineNextNode(list);
         } else {
-            decrementCounter(counterStr);
+            counter--;
             if (counter == 0) {
-                throw new OperationFailedException();
+                throw new FailedOperationException();
             }
             positionNodeToSend = definePreviousNode(list);
         }
         String uri = getURI(list.get(positionNodeToSend).getHost(), parameters);
         restTemplate = new RestTemplate();
-        ResponseEntity<Object> responseEntity = restTemplate.exchange (uri, HttpMethod.PUT,
-                        getHttpEntity(object, getHeaders(counter, flagRollback)), Object.class);
+        ResponseEntity<Object> responseEntity = restTemplate.exchange(uri, HttpMethod.PUT,
+                getHttpEntity(object, getHeaders(counter, flagRollback)), Object.class);
         checkStatusCode(responseEntity);
     }
 
-    public void sendPostObject(Object object, String counterStr, String flagRollback, String... parameters) {
+    public void sendPostObject(Object object, int counter, boolean flagRollback, String... parameters) {
         List<Node> list = listGroups.get(defineIdGroup(parameters[0]));
         int positionNodeToSend = 0;
-        if (!Boolean.valueOf(flagRollback)) {
-            incrementCounter(counterStr);
+        if (!flagRollback) {
+            counter++;
             if (counter == list.size()) {
                 return;
             }
             positionNodeToSend = defineNextNode(list);
         } else {
-            decrementCounter(counterStr);
+            counter--;
             if (counter == 0) {
-                throw new OperationFailedException();
+                throw new FailedOperationException();
             }
             positionNodeToSend = definePreviousNode(list);
         }
         String uri;
-        if (object instanceof Collection){
+        if (object instanceof Collection) {
             uri = list.get(positionNodeToSend).getHost() + NAME_APPLICATION;
-        }
-        else {
+        } else {
             uri = list.get(positionNodeToSend).getHost() + NAME_APPLICATION + "docs";
         }
         restTemplate = new RestTemplate();
@@ -116,19 +113,19 @@ public class DistributedService2 {
     }
 
 
-    public void sendDeleteObject(String counterStr, String flagRollback, String... parameters) {
+    public void sendDeleteObject(int counter, boolean flagRollback, String... parameters) {
         List<Node> list = listGroups.get(defineIdGroup(parameters[0]));
         int positionNodeToSend = 0;
-        if (!Boolean.valueOf(flagRollback)) {
-            incrementCounter(counterStr);
+        if (!flagRollback) {
+            counter++;
             if (counter == list.size()) {
                 return;
             }
             positionNodeToSend = defineNextNode(list);
         } else {
-            decrementCounter(counterStr);
+            counter--;
             if (counter == 0) {
-                throw new OperationFailedException();
+                throw new FailedOperationException();
             }
             positionNodeToSend = definePreviousNode(list);
         }
@@ -193,9 +190,9 @@ public class DistributedService2 {
         return headers;
     }
 
-    private HttpHeaders getHeaders(int counter, String rollback) {
+    private HttpHeaders getHeaders(int counter, boolean rollback) {
         HttpHeaders headers = getHeaders(counter);
-        headers.add("rollback", rollback);
+        headers.add("rollback", String.valueOf(rollback));
         return headers;
     }
 
@@ -227,22 +224,12 @@ public class DistributedService2 {
         return positionPreviousNode;
     }
 
-    private void incrementCounter(String counterStr) {
-        counter = Integer.valueOf(counterStr);
-        counter++;
-    }
-
-    private void decrementCounter(String counterStr) {
-        counter = Integer.valueOf(counterStr);
-        counter--;
-    }
-
     private void checkStatusCode(ResponseEntity responseEntity) {
         if (responseEntity.getStatusCode().is2xxSuccessful()) {
             return;
         }
         if (responseEntity.getStatusCode().is5xxServerError()) {
-            throw new OperationFailedException();
+            throw new FailedOperationException();
         }
     }
 

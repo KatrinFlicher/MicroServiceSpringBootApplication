@@ -4,10 +4,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ResponseStatus;
 
 @ResponseStatus(HttpStatus.SERVICE_UNAVAILABLE)
-public class OperationFailedException extends RuntimeException {
+public class FailedOperationException extends RuntimeException {
     private static String message = "Operation failed. Something wrong with data base.";
 
-    public OperationFailedException() {
+    public FailedOperationException() {
         super(message);
     }
 

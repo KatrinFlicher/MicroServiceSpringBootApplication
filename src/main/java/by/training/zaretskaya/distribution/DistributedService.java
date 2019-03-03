@@ -3,7 +3,6 @@ package by.training.zaretskaya.distribution;
 import by.training.zaretskaya.config.Configuration;
 import by.training.zaretskaya.config.Node;
 import by.training.zaretskaya.constants.Constants;
-import by.training.zaretskaya.exception.OperationFailedException;
 import by.training.zaretskaya.exception.ResourceNotFoundException;
 import by.training.zaretskaya.models.Collection;
 import org.springframework.http.HttpEntity;
@@ -90,7 +89,7 @@ public class DistributedService {
 //        } else {
 //            decrementCounter(counterStr);
 //            if (counter == 0) {
-//                throw new OperationFailedException();
+//                throw new FailedOperationException();
 //            }
 //            positionNodeToSend = definePreviousNode(list);
 //        }
@@ -129,7 +128,7 @@ public class DistributedService {
 //        } else {
 //            decrementCounter(counterStr);
 //            if (counter == 0) {
-//                throw new OperationFailedException();
+//                throw new FailedOperationException();
 //            }
 //            positionNodeToSend = definePreviousNode(list);
 //        }

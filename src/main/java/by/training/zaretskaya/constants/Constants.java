@@ -18,6 +18,6 @@ public class Constants {
     public static final String VARIABLE_FIELD_LIMIT = "limit";
     public static final String VARIABLE_FIELD_ALGORITHM = "algorithm";
 
-    public static final String ROLLBACK_ON = "true";
+    public static final boolean ROLLBACK_ON = true;
 
 }
