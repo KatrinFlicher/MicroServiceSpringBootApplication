@@ -32,20 +32,25 @@ public class RollbackService {
         }
         switch (method) {
             case POST:
+                System.out.println(object);
+                System.out.println("in rollback");
+                if (parameters.length == 2) {
+                    service.sendDeleteObject(counter, Constants.ROLLBACK_ON, parameters[0], parameters[1]);
+                } else {
+                    System.out.println("before sebnd" + counter + parameters[0]);
+                    service.sendDeleteObject(counter, Constants.ROLLBACK_ON, parameters[0]);
+                }
+                break;
+            case DELETE:
                 if (object instanceof Collection) {
+                    System.out.println(object);
+                    System.out.println("in rollback");
                     Collection collection = (Collection) object;
                     service.sendPostObject(collection, counter, Constants.ROLLBACK_ON, collection.getName());
                 } else {
                     Document document = (Document) object;
                     service.sendPostObject(document, counter,
                             Constants.ROLLBACK_ON, parameters[0], document.getKey());
-                }
-                break;
-            case DELETE:
-                if (parameters.length == 2) {
-                    service.sendDeleteObject(counter, Constants.ROLLBACK_ON, parameters[0], parameters[1]);
-                } else {
-                    service.sendDeleteObject(counter, Constants.ROLLBACK_ON, parameters[0]);
                 }
                 break;
             case PUT:

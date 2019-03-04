@@ -11,6 +11,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
@@ -71,10 +72,10 @@ public class DistributedService2 {
             }
             positionNodeToSend = defineNextNode(list);
         } else {
-            counter--;
             if (counter == 0) {
                 throw new FailedOperationException();
             }
+            counter--;
             positionNodeToSend = definePreviousNode(list);
         }
         String uri = getURI(list.get(positionNodeToSend).getHost(), parameters);
@@ -84,20 +85,21 @@ public class DistributedService2 {
         checkStatusCode(responseEntity);
     }
 
-    public void sendPostObject(Object object, int counter, boolean flagRollback, String... parameters) {
+    public void sendPostObject(Object object, int counter, boolean flagRollback, String... parameters) throws FailedOperationException {
         List<Node> list = listGroups.get(defineIdGroup(parameters[0]));
         int positionNodeToSend = 0;
         if (!flagRollback) {
+            System.out.println("normal");
             counter++;
             if (counter == list.size()) {
                 return;
             }
             positionNodeToSend = defineNextNode(list);
         } else {
-            counter--;
             if (counter == 0) {
                 throw new FailedOperationException();
             }
+            counter--;
             positionNodeToSend = definePreviousNode(list);
         }
         String uri;
@@ -107,13 +109,20 @@ public class DistributedService2 {
             uri = list.get(positionNodeToSend).getHost() + NAME_APPLICATION + "docs";
         }
         restTemplate = new RestTemplate();
-        ResponseEntity<Object> responseEntity = restTemplate
-                .postForEntity(uri, getHttpEntity(object, getHeaders(counter, flagRollback)), Object.class);
-        checkStatusCode(responseEntity);
+        System.out.println(uri + " - " + flagRollback + " c" + counter);
+        try {
+            ResponseEntity<Object> responseEntity = restTemplate
+                    .postForEntity(uri, getHttpEntity(object, getHeaders(counter, flagRollback)), Object.class);
+        } catch (HttpServerErrorException.ServiceUnavailable e) {
+            throw new FailedOperationException();
+        }
+
+        // checkStatusCode(responseEntity);
     }
 
 
-    public void sendDeleteObject(int counter, boolean flagRollback, String... parameters) {
+    public void sendDeleteObject(int counter, boolean flagRollback, String... parameters) throws FailedOperationException {
+        System.out.println("We are in sendDeleteObject, flagRollback " + flagRollback + " counter " + counter);
         List<Node> list = listGroups.get(defineIdGroup(parameters[0]));
         int positionNodeToSend = 0;
         if (!flagRollback) {
@@ -123,18 +132,28 @@ public class DistributedService2 {
             }
             positionNodeToSend = defineNextNode(list);
         } else {
-            counter--;
             if (counter == 0) {
+                System.out.println("Rollback finish + throw FaildesOperation");
+//                return;
                 throw new FailedOperationException();
             }
+            System.out.println(counter);
+            counter--;
             positionNodeToSend = definePreviousNode(list);
         }
         String uri = getURI(list.get(positionNodeToSend).getHost(), parameters);
+        System.out.println(uri);
         restTemplate = new RestTemplate();
-        ResponseEntity<Object> responseEntity = restTemplate
-                .exchange(uri,
-                        HttpMethod.DELETE, new HttpEntity<>(getHeaders(counter, flagRollback)), Object.class);
-        checkStatusCode(responseEntity);
+        try {
+            ResponseEntity<Object> responseEntity = restTemplate
+                    .exchange(uri,
+                            HttpMethod.DELETE, new HttpEntity<>(getHeaders(counter, flagRollback)), Object.class);
+        } catch (HttpServerErrorException.ServiceUnavailable e) {
+            throw new FailedOperationException();
+
+        }
+
+        //  checkStatusCode(responseEntity);
     }
 
     public ResponseEntity redirectPost(Collection collection) {
@@ -249,10 +268,11 @@ public class DistributedService2 {
     }
 
     private void checkStatusCode(ResponseEntity responseEntity) {
-        if (responseEntity.getStatusCode().is2xxSuccessful()) {
-            return;
-        }
+//        if (responseEntity.getStatusCode().is2xxSuccessful()) {
+//            return;
+//        }
         if (responseEntity.getStatusCode().is5xxServerError()) {
+            System.out.println("We are in checkStatusCode: " + responseEntity.getStatusCode());
             throw new FailedOperationException();
         }
     }

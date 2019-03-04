@@ -52,11 +52,9 @@ public class CollectionController {
             } catch (SomethingWrongWithDataBaseException | ResourceAccessException e) {
                 if (e instanceof ResourceAccessException) {
                     collectionService.delete(collection.getName());
-                    if (counter != 0) {
-                        counter--;
-                    }
                 }
-                rollbackService.rollback(counter, HttpMethod.POST);
+                System.out.println("before rollback" + counter);
+                rollbackService.rollback(counter, HttpMethod.POST, collection.getName());
                 //мне пришлось здесь это поставить
                 throw new FailedOperationException();
             }
@@ -64,6 +62,8 @@ public class CollectionController {
             return distributedService.redirectPost(collection);
         }
     }
+
+
 
     @GetMapping
     public List<Collection> listCollections
@@ -109,9 +109,6 @@ public class CollectionController {
             } catch (SomethingWrongWithDataBaseException | ResourceAccessException e) {
                 if (e instanceof ResourceAccessException) {
                     collectionService.create((Collection) rollbackService.getResource());
-                    if (counter != 0) {
-                        counter--;
-                    }
                 }
                 rollbackService.rollback(counter, HttpMethod.DELETE, idCollection);
             }
@@ -136,9 +133,6 @@ public class CollectionController {
             } catch (SomethingWrongWithDataBaseException | ResourceAccessException e) {
                 if (e instanceof ResourceAccessException) {
                     collectionService.updateName(collection.getName(), idCollection);
-                    if (counter != 0) {
-                        counter--;
-                    }
                 }
                 rollbackService.rollback(counter, HttpMethod.PUT, idCollection, Constants.VARIABLE_FIELD_NAME);
             }
@@ -166,9 +160,6 @@ public class CollectionController {
                 if (e instanceof ResourceAccessException) {
                     collectionService.updateCacheLimit(idCollection,
                             ((Collection) rollbackService.getResource()).getCacheLimit());
-                    if (counter != 0) {
-                        counter--;
-                    }
                 }
                 rollbackService.rollback(counter, HttpMethod.PUT, idCollection, Constants.VARIABLE_FIELD_LIMIT);
             }
@@ -196,9 +187,6 @@ public class CollectionController {
                 if (e instanceof ResourceAccessException) {
                     collectionService.updateAlgorithm(idCollection,
                             ((Collection) rollbackService.getResource()).getAlgorithm());
-                    if (counter != 0) {
-                        counter--;
-                    }
                 }
                 rollbackService.rollback(counter, HttpMethod.PUT, idCollection, Constants.VARIABLE_FIELD_ALGORITHM);
             }
