@@ -32,11 +32,6 @@ public class DistributedService2 {
         return defineIdGroup(id) == Configuration.getCurrentNode().getIdGroup();
     }
 
-    public boolean groupConsistReplicas(String id) {
-        int idGroup = defineIdGroup(id);
-        return listGroups.get(idGroup).size() == 1;
-    }
-
     public Object sendGetObject(int counter, String... parameters) {
         List<Node> list = listGroups.get(defineIdGroup(parameters[0]));
         counter++;
@@ -69,7 +64,7 @@ public class DistributedService2 {
     }
 
     public void sendUpdateObject(Object object, int counter, boolean flagRollback,
-                                 String... parameters){
+                                 String... parameters) {
         List<Node> list = listGroups.get(defineIdGroup(parameters[0]));
         int positionNodeToSend = 0;
         if (!flagRollback) {
@@ -95,7 +90,7 @@ public class DistributedService2 {
         }
     }
 
-    public void sendPostObject(Object object, int counter, boolean flagRollback, String... parameters){
+    public void sendPostObject(Object object, int counter, boolean flagRollback, String... parameters) {
         List<Node> list = listGroups.get(defineIdGroup(parameters[0]));
         int positionNodeToSend = 0;
         if (!flagRollback) {
@@ -154,7 +149,7 @@ public class DistributedService2 {
         restTemplate = new RestTemplate();
         try {
             restTemplate.exchange(uri,
-                            HttpMethod.DELETE, new HttpEntity<>(getHeaders(counter, flagRollback)), Object.class);
+                    HttpMethod.DELETE, new HttpEntity<>(getHeaders(counter, flagRollback)), Object.class);
         } catch (HttpServerErrorException.ServiceUnavailable e) {
             throw new FailedOperationException();
         }
@@ -269,16 +264,6 @@ public class DistributedService2 {
             }
         }
         return positionPreviousNode;
-    }
-
-    private void checkStatusCode(ResponseEntity responseEntity) {
-//        if (responseEntity.getStatusCode().is2xxSuccessful()) {
-//            return;
-//        }
-        if (responseEntity.getStatusCode().is5xxServerError()) {
-            System.out.println("We are in checkStatusCode: " + responseEntity.getStatusCode());
-            throw new FailedOperationException();
-        }
     }
 
     private String getURI(String host, String... ids) {

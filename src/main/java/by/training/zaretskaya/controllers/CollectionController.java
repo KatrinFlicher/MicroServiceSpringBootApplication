@@ -63,8 +63,6 @@ public class CollectionController {
         }
     }
 
-
-
     @GetMapping
     public List<Collection> listCollections
             (@RequestParam(required = false,
