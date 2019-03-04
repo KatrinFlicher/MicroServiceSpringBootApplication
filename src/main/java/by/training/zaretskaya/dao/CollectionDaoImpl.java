@@ -13,6 +13,7 @@ import org.springframework.stereotype.Component;
 
 import javax.persistence.*;
 import javax.transaction.Transactional;
+import java.sql.SQLException;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -44,7 +45,7 @@ public class CollectionDaoImpl implements CollectionDAO<Collection> {
             String sqlQuery = SQLConstants.CREATE_NAMED_TABLE_FOR_DOCUMENTS
                     .replace(SQLConstants.MOCK_NAME_COLLECTION, collection.getName());
             entityManager.createNativeQuery(sqlQuery).executeUpdate();
-            entityManager.flush();
+//            entityManager.flush();
         } catch (Exception e) {
             throw new SomethingWrongWithDataBaseException();
         }
@@ -53,11 +54,11 @@ public class CollectionDaoImpl implements CollectionDAO<Collection> {
     @Override
     public Collection getById(String name) {
         Collection collection = null;
-//        try {
+        try {
             collection = entityManager.find(Collection.class, name);
-//        } catch (Exception e) {
-//            throw new SomethingWrongWithDataBaseException();
-//        }
+        } catch (Exception e) {
+            throw new SomethingWrongWithDataBaseException();
+        }
         if (collection == null) {
             throw new ResourceNotFoundException(Constants.RESOURCE_COLLECTION, name);
         }
@@ -70,60 +71,28 @@ public class CollectionDaoImpl implements CollectionDAO<Collection> {
             checkNameTable(name);
             Collection collection = getById(name);
             entityManager.remove(collection);
-            entityManager.flush();
+//            entityManager.flush();
             String sqlQuery = SQLConstants.DROP_NAMED_DOCUMENT_TABLE
                     .replace(SQLConstants.MOCK_NAME_COLLECTION, name);
             entityManager.createNativeQuery(sqlQuery).executeUpdate();
-            entityManager.flush();
+//            entityManager.flush();
         } catch (Exception e) {
             throw new SomethingWrongWithDataBaseException();
         }
     }
 
     @Override
-    public void updateName(String name, String newName) {
-//        try {
-            checkNameTable(name);
-            checkNameTable(newName);
-            Collection collection = getById(name);
-            entityManager.remove(collection);
-            entityManager.flush();
-            collection.setName(newName);
-            entityManager.persist(collection);
-            String sqlQuery = SQLConstants.ALTER_NAMED_DOCUMENT_TABLE
-                    .replace(SQLConstants.MOCK_NAME_COLLECTION, name)
-                    .replace(SQLConstants.MOCK_NEW_NAME_COLLECTION, newName);
-            entityManager.createNativeQuery(sqlQuery).executeUpdate();
-            entityManager.flush();
-//        } catch (Exception e) {
-//            throw new SomethingWrongWithDataBaseException();
-//        }
+    public void update(String name, Collection collection) {
+        try{
+            Collection collectionFromDB = getById(name);
+            collectionFromDB.setCacheLimit(collection.getCacheLimit());
+            collectionFromDB.setAlgorithm(collection.getAlgorithm());
+            entityManager.persist(collectionFromDB);
+        }
+        catch (Exception e){
+            throw new SomethingWrongWithDataBaseException();
+        }
     }
-
-    @Override
-    public void updateCacheLimit(String name, int cacheLimit) {
-//        try {
-            Collection collection = getById(name);
-            collection.setCacheLimit(cacheLimit);
-            entityManager.persist(collection);
-            entityManager.flush();
-//        } catch (Exception e) {
-//            throw new SomethingWrongWithDataBaseException();
-//        }
-    }
-
-    @Override
-    public void updateAlgorithm(String name, String algorithm) {
-//        try {
-            Collection collection = getById(name);
-            collection.setAlgorithm(algorithm);
-            entityManager.persist(collection);
-            entityManager.flush();
-//        } catch (Exception e) {
-//            throw new SomethingWrongWithDataBaseException();
-//        }
-    }
-
 
     @SuppressWarnings("JpaQueryApiInspection")
     @Override

@@ -37,26 +37,10 @@ public interface CollectionDAO<C> {
     /**
      * Updates name for the specified name of collection in Data base
      *
-     * @param name    - name of collection instance
-     * @param newName - new name for collection
-     */
-    void updateName(String name, String newName);
-
-    /**
-     * Updates cache limit for the specified name of collection in Data base
-     *
      * @param name       - name of collection instance
-     * @param cacheLimit - new cache limit for collection
+     * @param collection - new instance of collection with new cache limit and algorithm
      */
-    void updateCacheLimit(String name, int cacheLimit);
-
-    /**
-     * Updates algorithm for the specified name of collection in Data base
-     *
-     * @param name      - name of collection instance
-     * @param algorithm - new algorithm for collection
-     */
-    void updateAlgorithm(String name, String algorithm);
+    void update(String name, C collection);
 
     /**
      * Returns list of collections from Data base starting with

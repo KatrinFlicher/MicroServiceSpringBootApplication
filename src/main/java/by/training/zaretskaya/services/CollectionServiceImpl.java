@@ -24,8 +24,7 @@ public class CollectionServiceImpl implements ICollectionService<Collection> {
     @Override
     public void create(Collection collection) {
         validator.checkNewNameForTable(collection.getName());
-        validator.checkValidationCacheLimit(collection.getCacheLimit());
-        validator.checkValidationAlgorithm(collection.getAlgorithm());
+        validator.checkValidationCollection(collection);
         collectionDAO.create(collection);
     }
 
@@ -40,21 +39,10 @@ public class CollectionServiceImpl implements ICollectionService<Collection> {
     }
 
     @Override
-    public void updateName(String name, String newName) {
-        validator.checkNewNameForTable(newName);
-        collectionDAO.updateName(name, newName);
-    }
-
-    @Override
-    public void updateCacheLimit(String name, int cacheLimit) {
-        validator.checkValidationCacheLimit(cacheLimit);
-        collectionDAO.updateCacheLimit(name, cacheLimit);
-    }
-
-    @Override
-    public void updateAlgorithm(String name, String algorithm) {
-        validator.checkValidationAlgorithm(algorithm);
-        collectionDAO.updateAlgorithm(name, algorithm);
+    public void update(String name, Collection collection) {
+        validator.checkExistenceOfCollection(name);
+        validator.checkValidationCollection(collection);
+        collectionDAO.update(name, collection);
     }
 
     @Override

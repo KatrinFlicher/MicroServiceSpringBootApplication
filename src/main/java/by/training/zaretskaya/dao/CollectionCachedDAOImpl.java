@@ -54,32 +54,13 @@ public class CollectionCachedDAOImpl implements CollectionDAO<Collection> {
     }
 
     @Override
-    public void updateName(String name, String newName) {
-        collectionDao.updateName(name, newName);
+    public void update(String name, Collection collection) {
+        collectionDao.update(name, collection);
         if (mapCollection.contains(name)) {
-            Collection collection = mapCollection.remove(name);
-            collection.setName(newName);
-            mapCollection.put(collection.getName(), collection);
-        }
-    }
-
-    @Override
-    public void updateCacheLimit(String name, int cacheLimit) {
-        collectionDao.updateCacheLimit(name, cacheLimit);
-        if (mapCollection.contains(name)) {
-            Collection collection = mapCollection.get(name);
-            collection.setCacheLimit(cacheLimit);
-            collection.setCache(FactoryCache.createCache(collection.getAlgorithm(), collection.getCacheLimit()));
-        }
-    }
-
-    @Override
-    public void updateAlgorithm(String name, String algorithm) {
-        collectionDao.updateAlgorithm(name, algorithm);
-        if (mapCollection.contains(name)) {
-            Collection collection = mapCollection.get(name);
-            collection.setAlgorithm(algorithm);
-            collection.setCache(FactoryCache.createCache(collection.getAlgorithm(), collection.getCacheLimit()));
+            Collection collectionFromDB = mapCollection.get(name);
+            collectionFromDB.setCacheLimit(collection.getCacheLimit());
+            collection.setAlgorithm(collection.getAlgorithm());
+            collectionFromDB.setCache(FactoryCache.createCache(collection.getAlgorithm(), collection.getCacheLimit()));
         }
     }
 

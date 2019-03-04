@@ -39,7 +39,6 @@ public class CollectionController {
                                            @RequestHeader(name = "rollback", required = false,
                                                    defaultValue = "false") boolean flagRollback) {
         if (distributedService.isMyGroup(collection.getName())) {
-            rollbackService.saveResource(collection);
             try {
                 collectionService.create(collection);
                 distributedService.sendPostObject(collection, counter, flagRollback, collection.getName());
@@ -53,8 +52,7 @@ public class CollectionController {
                 if (e instanceof ResourceAccessException) {
                     collectionService.delete(collection.getName());
                 }
-                System.out.println("before rollback" + counter);
-                rollbackService.rollback(counter, HttpMethod.POST, collection.getName());
+                rollbackService.rollback(counter, collection.getName());
                 //мне пришлось здесь это поставить
                 throw new FailedOperationException();
             }
@@ -96,96 +94,43 @@ public class CollectionController {
                                          defaultValue = "false") boolean flagRollback)
             throws CloneNotSupportedException {
         if (distributedService.isMyGroup(idCollection)) {
-            rollbackService.saveResource(collectionService.getById(idCollection).clone());
+            Collection collectionOldValue = collectionService.getById(idCollection).clone();
             try {
                 collectionService.delete(idCollection);
                 distributedService.sendDeleteObject(counter, flagRollback, idCollection);
             } catch (SomethingWrongWithDataBaseException | ResourceAccessException e) {
                 if (e instanceof ResourceAccessException) {
-                    collectionService.create((Collection) rollbackService.getResource());
+                    collectionService.create(collectionOldValue);
                 }
-                rollbackService.rollback(counter, HttpMethod.DELETE, idCollection);
+                rollbackService.rollback(collectionOldValue, counter, HttpMethod.DELETE, idCollection);
             }
         } else {
             distributedService.redirect(idCollection, HttpMethod.DELETE);
         }
     }
 
-    @PutMapping("/{idCollection}/name")
+    @PutMapping("/{idCollection}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void updateCollectionName(@PathVariable String idCollection,
+    public void updateCollection(@PathVariable String idCollection,
                                      @RequestBody Collection collection,
                                      @RequestHeader(name = "counter", required = false,
                                              defaultValue = "0") int counter,
                                      @RequestHeader(name = "rollback", required = false,
-                                             defaultValue = "false") boolean flagRollback) {
+                                             defaultValue = "false") boolean flagRollback) throws CloneNotSupportedException {
         if (distributedService.isMyGroup(idCollection)) {
+            Collection collectionOldValue = collectionService.getById(idCollection).clone();
             try {
-                collectionService.updateName(idCollection, collection.getName());
+                collectionService.update(idCollection, collection);
                 distributedService.sendUpdateObject(collection, counter, flagRollback,
-                        idCollection, Constants.VARIABLE_FIELD_NAME);
+                        idCollection);
             } catch (SomethingWrongWithDataBaseException | ResourceAccessException e) {
                 if (e instanceof ResourceAccessException) {
-                    collectionService.updateName(collection.getName(), idCollection);
+                    collectionService.update(idCollection, collectionOldValue);
                 }
-                rollbackService.rollback(counter, HttpMethod.PUT, idCollection, Constants.VARIABLE_FIELD_NAME);
+                rollbackService.rollback(collectionOldValue, counter, HttpMethod.PUT, idCollection);
             }
         } else {
-            distributedService.redirectPut(idCollection, collection, Constants.VARIABLE_FIELD_NAME);
-        }
-    }
-
-    @PutMapping("/{idCollection}/limit")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void updateCollectionCacheLimit(@PathVariable String idCollection,
-                                           @RequestBody Collection collection,
-                                           @RequestHeader(name = "counter", required = false,
-                                                   defaultValue = "0") int counter,
-                                           @RequestHeader(name = "rollback", required = false,
-                                                   defaultValue = "false") boolean flagRollback)
-            throws CloneNotSupportedException {
-        if (distributedService.isMyGroup(idCollection)) {
-            rollbackService.saveResource(collectionService.getById(idCollection).clone());
-            try {
-                collectionService.updateCacheLimit(idCollection, collection.getCacheLimit());
-                distributedService.sendUpdateObject(collection, counter, flagRollback,
-                        idCollection, Constants.VARIABLE_FIELD_LIMIT);
-            } catch (SomethingWrongWithDataBaseException | ResourceAccessException e) {
-                if (e instanceof ResourceAccessException) {
-                    collectionService.updateCacheLimit(idCollection,
-                            ((Collection) rollbackService.getResource()).getCacheLimit());
-                }
-                rollbackService.rollback(counter, HttpMethod.PUT, idCollection, Constants.VARIABLE_FIELD_LIMIT);
-            }
-        } else {
-            distributedService.redirectPut(idCollection, collection, Constants.VARIABLE_FIELD_LIMIT);
-        }
-    }
-
-    @PutMapping("/{idCollection}/algorithm")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void updateCollectionAlgorithm(@PathVariable String idCollection,
-                                          @RequestBody Collection collection,
-                                          @RequestHeader(name = "counter", required = false,
-                                                  defaultValue = "0") int counter,
-                                          @RequestHeader(name = "rollback", required = false,
-                                                  defaultValue = "false") boolean flagRollback)
-            throws CloneNotSupportedException {
-        if (distributedService.isMyGroup(idCollection)) {
-            rollbackService.saveResource(collectionService.getById(idCollection).clone());
-            try {
-                collectionService.updateAlgorithm(idCollection, collection.getAlgorithm());
-                distributedService.sendUpdateObject(collection, counter, flagRollback,
-                        idCollection, Constants.VARIABLE_FIELD_ALGORITHM);
-            } catch (SomethingWrongWithDataBaseException | ResourceAccessException e) {
-                if (e instanceof ResourceAccessException) {
-                    collectionService.updateAlgorithm(idCollection,
-                            ((Collection) rollbackService.getResource()).getAlgorithm());
-                }
-                rollbackService.rollback(counter, HttpMethod.PUT, idCollection, Constants.VARIABLE_FIELD_ALGORITHM);
-            }
-        } else {
-            distributedService.redirectPut(idCollection, collection, Constants.VARIABLE_FIELD_ALGORITHM);
+            distributedService.redirectPut(idCollection, collection);
         }
     }
 }

@@ -6,6 +6,7 @@ import by.training.zaretskaya.constants.Constants;
 import by.training.zaretskaya.exception.FailedOperationException;
 import by.training.zaretskaya.exception.ResourceNotFoundException;
 import by.training.zaretskaya.models.Collection;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -15,6 +16,7 @@ import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -26,6 +28,7 @@ public class DistributedService2 {
 
     public DistributedService2() {
         listGroups = Configuration.getAllGroups();
+        restTemplate = new RestTemplate();
     }
 
     public boolean isMyGroup(String id) {
@@ -34,6 +37,7 @@ public class DistributedService2 {
 
     public Object sendGetObject(int counter, String... parameters) {
         List<Node> list = listGroups.get(defineIdGroup(parameters[0]));
+       // List<Node> newList = new ArrayList<Node>(list);
         counter++;
         if (counter == list.size()) {
             if (parameters.length == 2) {
@@ -42,8 +46,6 @@ public class DistributedService2 {
             throw new ResourceNotFoundException(Constants.RESOURCE_COLLECTION, parameters[0]);
         }
         int positionNodeToSend = defineNextNode(list);
-        restTemplate = new RestTemplate();
-
         String uri = getURI(list.get(positionNodeToSend).getHost(), parameters);
         try {
             ResponseEntity<Object> responseEntity = restTemplate
@@ -81,7 +83,6 @@ public class DistributedService2 {
             positionNodeToSend = definePreviousNode(list);
         }
         String uri = getURI(list.get(positionNodeToSend).getHost(), parameters);
-        restTemplate = new RestTemplate();
         try {
             restTemplate.exchange(uri, HttpMethod.PUT,
                     getHttpEntity(object, getHeaders(counter, flagRollback)), Object.class);
@@ -94,7 +95,6 @@ public class DistributedService2 {
         List<Node> list = listGroups.get(defineIdGroup(parameters[0]));
         int positionNodeToSend = 0;
         if (!flagRollback) {
-            System.out.println("normal");
             counter++;
             if (counter == list.size()) {
                 return;
@@ -113,8 +113,6 @@ public class DistributedService2 {
         } else {
             uri = list.get(positionNodeToSend).getHost() + NAME_APPLICATION + "docs";
         }
-        restTemplate = new RestTemplate();
-        System.out.println(uri + " - " + flagRollback + " c" + counter);
         try {
             restTemplate
                     .postForEntity(uri, getHttpEntity(object, getHeaders(counter, flagRollback)), Object.class);
@@ -125,7 +123,6 @@ public class DistributedService2 {
 
 
     public void sendDeleteObject(int counter, boolean flagRollback, String... parameters) throws FailedOperationException {
-        System.out.println("We are in sendDeleteObject, flagRollback " + flagRollback + " counter " + counter);
         List<Node> list = listGroups.get(defineIdGroup(parameters[0]));
         int positionNodeToSend = 0;
         if (!flagRollback) {
@@ -136,17 +133,12 @@ public class DistributedService2 {
             positionNodeToSend = defineNextNode(list);
         } else {
             if (counter == 0) {
-                System.out.println("Rollback finish + throw FaildesOperation");
-//                return;
                 throw new FailedOperationException();
             }
-            System.out.println(counter);
             counter--;
             positionNodeToSend = definePreviousNode(list);
         }
         String uri = getURI(list.get(positionNodeToSend).getHost(), parameters);
-        System.out.println(uri);
-        restTemplate = new RestTemplate();
         try {
             restTemplate.exchange(uri,
                     HttpMethod.DELETE, new HttpEntity<>(getHeaders(counter, flagRollback)), Object.class);
@@ -157,7 +149,6 @@ public class DistributedService2 {
 
     public ResponseEntity redirectPost(Collection collection) {
         List<Node> list = listGroups.get(defineIdGroup(collection.getName()));
-        restTemplate = new RestTemplate();
         try {
             return restTemplate.postForEntity(list.get(0).getHost() + NAME_APPLICATION,
                     getHttpEntity(collection, getHeaders()), Collection.class);
@@ -166,11 +157,11 @@ public class DistributedService2 {
         }
     }
 
-    public Object redirectPut(String id, Collection collection, String variableField) {
+    public Object redirectPut(String id, Collection collection) {
         List<Node> list = listGroups.get(defineIdGroup(id));
         restTemplate = new RestTemplate();
         try {
-            return restTemplate.exchange(constructURI(list.get(0).getHost(), id, variableField), HttpMethod.PUT,
+            return restTemplate.exchange(constructURI(list.get(0).getHost(), id), HttpMethod.PUT,
                     getHttpEntity(collection, getHeaders()), Collection.class);
         } catch (ResourceAccessException e) {
             throw new FailedOperationException();
@@ -206,10 +197,6 @@ public class DistributedService2 {
 
     private String constructURI(String host, String id) {
         return host + NAME_APPLICATION + id;
-    }
-
-    private String constructURI(String host, String id, String variableField) {
-        return constructURI(host, id) + "/" + variableField;
     }
 
     private String constructURIForDocument(String host, String idCollection, String idDocument) {
@@ -268,11 +255,6 @@ public class DistributedService2 {
 
     private String getURI(String host, String... ids) {
         if (ids.length == 2) {
-            if (ids[1].equals(Constants.VARIABLE_FIELD_LIMIT) ||
-                    ids[1].equals(Constants.VARIABLE_FIELD_ALGORITHM) ||
-                    ids[1].equals(Constants.VARIABLE_FIELD_NAME)) {
-                return constructURI(host, ids[0], ids[1]);
-            }
             return constructURIForDocument(host, ids[0], ids[1]);
         }
         return constructURI(host, ids[0]);

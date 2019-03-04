@@ -39,17 +39,14 @@ public class EntityValidator {
         }
     }
 
-    public void checkValidationCacheLimit(int cacheLimit) {
-        if (cacheLimit < 0) {
-            throw new CollectionWrongParameters(Constants.NEGATIVE_CACHE_LIMIT, String.valueOf(cacheLimit));
+    public void checkValidationCollection(Collection collection) {
+        if (collection.getCacheLimit() < 0) {
+            throw new CollectionWrongParameters(Constants.NEGATIVE_CACHE_LIMIT, String.valueOf(collection.getCacheLimit()));
         }
-    }
-
-    public void checkValidationAlgorithm(String algorithm) {
         try {
-            FactoryCache.TypeCache.valueOf(algorithm);
+            FactoryCache.TypeCache.valueOf(collection.getAlgorithm());
         } catch (IllegalArgumentException e) {
-            throw new CollectionWrongParameters(Constants.INCOMPATIBLE_FORMAT_CACHE_ALGORITHM, algorithm);
+            throw new CollectionWrongParameters(Constants.INCOMPATIBLE_FORMAT_CACHE_ALGORITHM, collection.getAlgorithm());
         }
     }
 

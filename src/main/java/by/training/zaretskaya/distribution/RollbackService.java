@@ -12,42 +12,46 @@ import org.springframework.stereotype.Component;
 public class RollbackService {
     @Autowired
     private DistributedService2 service;
-    private Object object;
 
     public RollbackService() {
     }
 
-    public void saveResource(Object object) {
-        this.object = object;
-    }
-
-    public Object getResource() {
-        return this.object;
-    }
-
-    public void rollback(int counter, HttpMethod method, String... parameters) {
+    public void rollback(int counter, String... parameters) {
         if (counter == 0) {
             throw new FailedOperationException();
         }
+        if (parameters.length == 2) {
+            service.sendDeleteObject(counter, Constants.ROLLBACK_ON, parameters[0], parameters[1]);
+        } else {
+            service.sendDeleteObject(counter, Constants.ROLLBACK_ON, parameters[0]);
+        }
+    }
+
+    public void rollback(Object object, int counter, HttpMethod method, String... parameters) {
+        Collection collection = null;
+        Document document = null;
+        if (counter == 0) {
+            throw new FailedOperationException();
+        }
+        if (object instanceof Collection) {
+            collection = (Collection) object;
+        } else {
+            document = (Document) object;
+        }
         switch (method) {
-            case POST:
-                if (parameters.length == 2) {
-                    service.sendDeleteObject(counter, Constants.ROLLBACK_ON, parameters[0], parameters[1]);
-                } else {
-                    service.sendDeleteObject(counter, Constants.ROLLBACK_ON, parameters[0]);
-                }
-                break;
             case DELETE:
-                if (object instanceof Collection) {
-                    Collection collection = (Collection) object;
-                    service.sendPostObject(collection, counter, Constants.ROLLBACK_ON, collection.getName());
+                if (parameters.length == 2) {
+                    service.sendPostObject(document, counter, Constants.ROLLBACK_ON, parameters[0], parameters[1]);
                 } else {
-                    Document document = (Document) object;
-                    service.sendPostObject(document, counter, Constants.ROLLBACK_ON, parameters[0], document.getKey());
+                    service.sendPostObject(collection, counter, Constants.ROLLBACK_ON, parameters[0]);
                 }
                 break;
             case PUT:
-                service.sendUpdateObject(object, counter, Constants.ROLLBACK_ON, parameters[0], parameters[1]);
+                if (parameters.length == 2) {
+                    service.sendUpdateObject(document, counter, Constants.ROLLBACK_ON, parameters[0], parameters[1]);
+                } else {
+                    service.sendUpdateObject(collection, counter, Constants.ROLLBACK_ON, parameters[0]);
+                }
                 break;
         }
     }

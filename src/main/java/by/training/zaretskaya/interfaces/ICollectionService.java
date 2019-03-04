@@ -10,11 +10,7 @@ public interface ICollectionService<C> {
 
     void delete(String name);
 
-    void updateName(String name, String newName);
-
-    void updateCacheLimit(String name, int cacheLimit);
-
-    void updateAlgorithm(String name, String algorithm);
+    void update(String name, C collection);
 
     List<C> listCollections(int page, int size);
 }
