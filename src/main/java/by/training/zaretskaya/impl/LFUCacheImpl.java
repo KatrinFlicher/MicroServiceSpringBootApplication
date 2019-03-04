@@ -22,13 +22,13 @@ public class LFUCacheImpl implements ICache {
         sizeMax = size;
     }
 
-    //The redirect provides constant-time performance O(1)
+    //The method provides constant-time performance O(1)
     public synchronized int size() {
         return cacheMap.size();
     }
 
-    //The redirect provides linear performance O(n)
-    // since redirect invalidate() has O(n) and redirect map.put(key, value) has O(1).
+    //The method provides linear performance O(n)
+    // since method invalidate() has O(n) and method map.put(key, value) has O(1).
     public synchronized Object put(Object key, Object value) {
         if (!contains(key)) {
             if (size() == sizeMax) {
@@ -39,12 +39,12 @@ public class LFUCacheImpl implements ICache {
         return cacheMap.put(key, value);
     }
 
-    //The redirect provides constant-time performance O(1)
+    //The method provides constant-time performance O(1)
     public synchronized boolean contains(Object key) {
         return cacheMap.containsKey(key);
     }
 
-    //The redirect provides constant-time performance O(1)
+    //The method provides constant-time performance O(1)
     // since methods included in it have performance О(1)(methods contains(key),map.put(key,value), map.get(key)).
     public synchronized Object get(Object key) {
         if (contains(key)) {
@@ -57,9 +57,9 @@ public class LFUCacheImpl implements ICache {
         }
     }
 
-    //The redirect provides linear performance O(n)
-    // since redirect Collections.min depends on size of collection and has linear performance О(n)
-    // and redirect map.remove(key) has O(1)).
+    //The method provides linear performance O(n)
+    // since method Collections.min depends on size of collection and has linear performance О(n)
+    // and method map.remove(key) has O(1)).
     public synchronized Object invalidate() {
         Map.Entry<Object, Integer> keyWithMinFrequency = Collections.min(mapFrequencies.entrySet(),
                 Comparator.comparing(Map.Entry::getValue));
@@ -67,7 +67,7 @@ public class LFUCacheImpl implements ICache {
         return cacheMap.remove(keyWithMinFrequency.getKey());
     }
 
-    //The redirect provides performance from O(1) to O(n) depending on the running redirect.
+    //The method provides performance from O(1) to O(n) depending on the running method.
     public synchronized Object putIfAbsent(Object key, Object value) {
         if (!contains(key)) {
             return put(key, value);

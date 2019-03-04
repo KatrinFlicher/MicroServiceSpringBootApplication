@@ -140,22 +140,46 @@ public class DistributedService2 {
     public ResponseEntity redirectPost(Collection collection) {
         List<Node> list = listGroups.get(defineIdGroup(collection.getName()));
         restTemplate = new RestTemplate();
-        return restTemplate.postForEntity(list.get(0).getHost() + NAME_APPLICATION,
-                getHttpEntity(collection, getHeaders()), Collection.class);
+        try {
+            return restTemplate.postForEntity(list.get(0).getHost() + NAME_APPLICATION,
+                    getHttpEntity(collection, getHeaders()), Collection.class);
+        } catch (ResourceAccessException e) {
+            throw new FailedOperationException();
+        }
     }
 
     public Object redirectPut(String id, Collection collection, String variableField) {
         List<Node> list = listGroups.get(defineIdGroup(id));
         restTemplate = new RestTemplate();
-        return restTemplate.exchange(constructURI(list.get(0).getHost(), id, variableField), HttpMethod.PUT,
-                getHttpEntity(collection, getHeaders()), Collection.class);
+        try {
+            return restTemplate.exchange(constructURI(list.get(0).getHost(), id, variableField), HttpMethod.PUT,
+                    getHttpEntity(collection, getHeaders()), Collection.class);
+        } catch (ResourceAccessException e) {
+            throw new FailedOperationException();
+        }
     }
 
     public Object redirect(String id, HttpMethod method) {
         List<Node> list = listGroups.get(defineIdGroup(id));
         restTemplate = new RestTemplate();
-        return restTemplate.exchange(constructURI(list.get(0).getHost(), id), method,
-                new HttpEntity<>(getHeaders()), Collection.class);
+        if (method == HttpMethod.GET) {
+            for (int i = 0; i < list.size(); i++) {
+                try {
+                    return restTemplate.exchange(constructURI(list.get(i).getHost(), id), method,
+                            new HttpEntity<>(getHeaders()), Collection.class);
+                } catch (ResourceAccessException e) {
+                    if (i == (list.size() - 1)) {
+                        throw new FailedOperationException();
+                    }
+                }
+            }
+        }
+        try {
+            return restTemplate.exchange(constructURI(list.get(0).getHost(), id), method,
+                    new HttpEntity<>(getHeaders()), Collection.class);
+        } catch (ResourceAccessException e) {
+            throw new FailedOperationException();
+        }
     }
 
     private int defineIdGroup(String id) {

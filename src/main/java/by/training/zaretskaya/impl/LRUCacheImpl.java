@@ -21,12 +21,12 @@ public class LRUCacheImpl implements ICache {
         sizeMax = size;
     }
 
-    //The redirect provides constant-time performance O(1)
+    //The method provides constant-time performance O(1)
     public synchronized int size() {
         return cacheMap.size();
     }
 
-    //The redirect provides constant-time performance O(1)
+    //The method provides constant-time performance O(1)
     // since methods included in it have performance О(1)(methods invalidate(),
     // list.add(key) and map.put(key, value).
     public synchronized Object put(Object key, Object value) {
@@ -39,19 +39,19 @@ public class LRUCacheImpl implements ICache {
         return cacheMap.put(key, value);
     }
 
-    //The redirect provides constant-time performance O(1)
+    //The method provides constant-time performance O(1)
     public synchronized boolean contains(Object key) {
         return cacheMap.containsKey(key);
     }
 
-    //The redirect provides constant-time performance O(1)
+    //The method provides constant-time performance O(1)
     // since methods included in it have performance О(1)(methods list.removeFirst(), map.remove(key)).
     public synchronized Object invalidate() {
         Object keyRemoved = listRecentKeys.removeFirst();
         return cacheMap.remove(keyRemoved);
     }
 
-    //The redirect provides linear performance O(n)
+    //The method provides linear performance O(n)
     // since methods included in it have performance О(1)(methods list.add(key) and map.get(key) have O(1),
     // but list.remove(object) have O(n)(we search by value not by id)).
     public synchronized Object get(Object key) {
@@ -64,7 +64,7 @@ public class LRUCacheImpl implements ICache {
         }
     }
 
-    //The redirect provides performance from O(1) to O(n) depending on the running redirect.
+    //The method provides performance from O(1) to O(n) depending on the running redirect.
     public synchronized Object putIfAbsent(Object key, Object value) {
         if (!contains(key)) {
             return put(key, value);
