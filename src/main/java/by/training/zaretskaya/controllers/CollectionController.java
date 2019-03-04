@@ -82,11 +82,7 @@ public class CollectionController {
             try {
                 return collectionService.getById(idCollection);
             } catch (SomethingWrongWithDataBaseException e) {
-                if (distributedService.groupConsistReplicas(idCollection)) {
-                    return (Collection) distributedService.sendGetObject(counter, idCollection);
-                } else {
-                    throw e;
-                }
+                return (Collection) distributedService.sendGetObject(counter, idCollection);
             }
         } else {
             return (Collection) distributedService.redirect(idCollection, HttpMethod.GET);

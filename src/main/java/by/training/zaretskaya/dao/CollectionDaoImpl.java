@@ -53,11 +53,11 @@ public class CollectionDaoImpl implements CollectionDAO<Collection> {
     @Override
     public Collection getById(String name) {
         Collection collection = null;
-        try {
+//        try {
             collection = entityManager.find(Collection.class, name);
-        } catch (Exception e) {
-            throw new SomethingWrongWithDataBaseException();
-        }
+//        } catch (Exception e) {
+//            throw new SomethingWrongWithDataBaseException();
+//        }
         if (collection == null) {
             throw new ResourceNotFoundException(Constants.RESOURCE_COLLECTION, name);
         }
@@ -82,7 +82,7 @@ public class CollectionDaoImpl implements CollectionDAO<Collection> {
 
     @Override
     public void updateName(String name, String newName) {
-        try {
+//        try {
             checkNameTable(name);
             checkNameTable(newName);
             Collection collection = getById(name);
@@ -95,33 +95,33 @@ public class CollectionDaoImpl implements CollectionDAO<Collection> {
                     .replace(SQLConstants.MOCK_NEW_NAME_COLLECTION, newName);
             entityManager.createNativeQuery(sqlQuery).executeUpdate();
             entityManager.flush();
-        } catch (Exception e) {
-            throw new SomethingWrongWithDataBaseException();
-        }
+//        } catch (Exception e) {
+//            throw new SomethingWrongWithDataBaseException();
+//        }
     }
 
     @Override
     public void updateCacheLimit(String name, int cacheLimit) {
-        try {
+//        try {
             Collection collection = getById(name);
             collection.setCacheLimit(cacheLimit);
             entityManager.persist(collection);
             entityManager.flush();
-        } catch (Exception e) {
-            throw new SomethingWrongWithDataBaseException();
-        }
+//        } catch (Exception e) {
+//            throw new SomethingWrongWithDataBaseException();
+//        }
     }
 
     @Override
     public void updateAlgorithm(String name, String algorithm) {
-        try {
+//        try {
             Collection collection = getById(name);
             collection.setAlgorithm(algorithm);
             entityManager.persist(collection);
             entityManager.flush();
-        } catch (Exception e) {
-            throw new SomethingWrongWithDataBaseException();
-        }
+//        } catch (Exception e) {
+//            throw new SomethingWrongWithDataBaseException();
+//        }
     }
 
 

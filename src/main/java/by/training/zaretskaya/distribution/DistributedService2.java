@@ -48,21 +48,28 @@ public class DistributedService2 {
         }
         int positionNodeToSend = defineNextNode(list);
         restTemplate = new RestTemplate();
+
         String uri = getURI(list.get(positionNodeToSend).getHost(), parameters);
-        ResponseEntity<Object> responseEntity = restTemplate
-                .exchange(uri, HttpMethod.GET, new HttpEntity<>(getHeaders(counter)), Object.class);
-        if (responseEntity.getStatusCode().is2xxSuccessful()) {
-            return responseEntity.getBody();
-        } else {
-            if (parameters.length == 2) {
-                throw new ResourceNotFoundException(Constants.RESOURCE_DOCUMENT, parameters[1]);
+        try {
+            ResponseEntity<Object> responseEntity = restTemplate
+                    .exchange(uri, HttpMethod.GET, new HttpEntity<>(getHeaders(counter)), Object.class);
+            if (responseEntity.getStatusCode().is2xxSuccessful()) {
+                return responseEntity.getBody();
+            } else {
+                if (parameters.length == 2) {
+                    throw new ResourceNotFoundException(Constants.RESOURCE_DOCUMENT, parameters[1]);
+                }
+                throw new ResourceNotFoundException(Constants.RESOURCE_COLLECTION, parameters[0]);
             }
-            throw new ResourceNotFoundException(Constants.RESOURCE_COLLECTION, parameters[0]);
+        } catch (HttpServerErrorException.ServiceUnavailable e) {
+            //Костыль!
+            counter = counter - 2;
+            return sendGetObject(counter, parameters);
         }
     }
 
     public void sendUpdateObject(Object object, int counter, boolean flagRollback,
-                                 String... parameters) throws ResourceAccessException {
+                                 String... parameters){
         List<Node> list = listGroups.get(defineIdGroup(parameters[0]));
         int positionNodeToSend = 0;
         if (!flagRollback) {
@@ -80,12 +87,15 @@ public class DistributedService2 {
         }
         String uri = getURI(list.get(positionNodeToSend).getHost(), parameters);
         restTemplate = new RestTemplate();
-        ResponseEntity<Object> responseEntity = restTemplate.exchange(uri, HttpMethod.PUT,
-                getHttpEntity(object, getHeaders(counter, flagRollback)), Object.class);
-        checkStatusCode(responseEntity);
+        try {
+            restTemplate.exchange(uri, HttpMethod.PUT,
+                    getHttpEntity(object, getHeaders(counter, flagRollback)), Object.class);
+        } catch (HttpServerErrorException.ServiceUnavailable e) {
+            throw new FailedOperationException();
+        }
     }
 
-    public void sendPostObject(Object object, int counter, boolean flagRollback, String... parameters) throws FailedOperationException {
+    public void sendPostObject(Object object, int counter, boolean flagRollback, String... parameters){
         List<Node> list = listGroups.get(defineIdGroup(parameters[0]));
         int positionNodeToSend = 0;
         if (!flagRollback) {
@@ -111,13 +121,11 @@ public class DistributedService2 {
         restTemplate = new RestTemplate();
         System.out.println(uri + " - " + flagRollback + " c" + counter);
         try {
-            ResponseEntity<Object> responseEntity = restTemplate
+            restTemplate
                     .postForEntity(uri, getHttpEntity(object, getHeaders(counter, flagRollback)), Object.class);
         } catch (HttpServerErrorException.ServiceUnavailable e) {
             throw new FailedOperationException();
         }
-
-        // checkStatusCode(responseEntity);
     }
 
 
@@ -145,15 +153,11 @@ public class DistributedService2 {
         System.out.println(uri);
         restTemplate = new RestTemplate();
         try {
-            ResponseEntity<Object> responseEntity = restTemplate
-                    .exchange(uri,
+            restTemplate.exchange(uri,
                             HttpMethod.DELETE, new HttpEntity<>(getHeaders(counter, flagRollback)), Object.class);
         } catch (HttpServerErrorException.ServiceUnavailable e) {
             throw new FailedOperationException();
-
         }
-
-        //  checkStatusCode(responseEntity);
     }
 
     public ResponseEntity redirectPost(Collection collection) {
