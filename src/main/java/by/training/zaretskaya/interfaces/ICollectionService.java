@@ -12,5 +12,5 @@ public interface ICollectionService<C> {
 
     void update(String name, C collection);
 
-    List<C> listCollections(int page, int size);
+    List<C> listCollections(String objectToCompare, int size);
 }

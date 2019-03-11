@@ -6,8 +6,8 @@ public class Constants {
     public static final String RESOURCE_DOCUMENT = "Document";
 
     public static final Integer MAX_SIZE_FOR_CACHE_COLLECTIONS = 50;
-    public static final String START_PAGE = "1";
-    public static final String DEFAULT_LIMIT_SIZE = "10";
+    public static final String DEFAULT_OBJECT_TO_COMPARE = "";
+    public static final String DEFAULT_LIMIT_SIZE = "4";
 
 
     //Exceptions
@@ -19,5 +19,12 @@ public class Constants {
     public static final String VARIABLE_FIELD_ALGORITHM = "algorithm";
 
     public static final boolean ROLLBACK_ON = true;
+    public static final boolean REPLICA_ON = true;
+    public static final boolean MAIN_GROUP_OFF = false;
+
+    public static final int POSITION_ID_COLLECTION = 0;
+    public static final int POSITION_ID_DOCUMENT = 1;
+    public static final String NAME_APPLICATION = "/rest/";
+    public static final String DOCUMENTS = "/docs/";
 
 }

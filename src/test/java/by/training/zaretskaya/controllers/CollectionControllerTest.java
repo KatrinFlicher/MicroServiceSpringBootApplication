@@ -66,19 +66,19 @@ public class CollectionControllerTest {
                 response.getHeader(HttpHeaders.LOCATION));
     }
 
-    @Test
-    public void testListCollections() throws Exception {
-        String expected = "[" + exampleCollectionJson + "," + exampleCollectionJson + "," + exampleCollectionJson + "]";
-        List<Collection> collections = Arrays.asList(mockCollection, mockCollection, mockCollection);
-        Mockito.when(collectionService
-                .listCollections(Mockito.anyInt(), Mockito.anyInt()))
-                .thenReturn(collections);
-        RequestBuilder requestBuilder = MockMvcRequestBuilders
-                .get("/rest")
-                .accept(MediaType.APPLICATION_JSON);
-        MvcResult result = mockMvc.perform(requestBuilder).andReturn();
-        JSONAssert.assertEquals(expected, result.getResponse().getContentAsString(), false);
-    }
+//    @Test
+//    public void testListCollections() throws Exception {
+//        String expected = "[" + exampleCollectionJson + "," + exampleCollectionJson + "," + exampleCollectionJson + "]";
+//        List<Collection> collections = Arrays.asList(mockCollection, mockCollection, mockCollection);
+//        Mockito.when(collectionService
+//                .listCollections(Mockito.anyInt(), Mockito.anyInt()))
+//                .thenReturn(collections);
+//        RequestBuilder requestBuilder = MockMvcRequestBuilders
+//                .get("/rest")
+//                .accept(MediaType.APPLICATION_JSON);
+//        MvcResult result = mockMvc.perform(requestBuilder).andReturn();
+//        JSONAssert.assertEquals(expected, result.getResponse().getContentAsString(), false);
+//    }
 
     @Test
     public void testGetCollectionById() throws Exception {
@@ -100,36 +100,36 @@ public class CollectionControllerTest {
         assertEquals(HttpStatus.NO_CONTENT.value(), result.getResponse().getStatus());
     }
 
-    @Test
-    public void testUpdateCollectionName() throws Exception {
-        MvcResult result = prepareUpdate("name");
-        Mockito.verify(collectionService)
-                .updateName(Mockito.anyString(), Mockito.anyString());
-        assertEquals(HttpStatus.NO_CONTENT.value(), result.getResponse().getStatus());
-    }
-
-    @Test
-    public void testUpdateCollectionCacheLimit() throws Exception {
-        MvcResult result = prepareUpdate("limit");
-        Mockito.verify(collectionService)
-                .updateCacheLimit(Mockito.anyString(), Mockito.anyInt());
-        assertEquals(HttpStatus.NO_CONTENT.value(), result.getResponse().getStatus());
-    }
-
-    @Test
-    public void testUpdateCollectionAlgorithm() throws Exception {
-        MvcResult result = prepareUpdate("algorithm");
-        Mockito.verify(collectionService)
-                .updateAlgorithm(Mockito.anyString(), Mockito.anyString());
-        assertEquals(HttpStatus.NO_CONTENT.value(), result.getResponse().getStatus());
-    }
-
-    private MvcResult prepareUpdate(String changeableValue) throws Exception {
-        RequestBuilder requestBuilder = MockMvcRequestBuilders
-                .put("/rest/cats/" + changeableValue)
-                .accept(MediaType.APPLICATION_JSON)
-                .content(exampleCollectionJson)
-                .contentType(MediaType.APPLICATION_JSON);
-        return mockMvc.perform(requestBuilder).andReturn();
-    }
+//    @Test
+//    public void testUpdateCollectionName() throws Exception {
+//        MvcResult result = prepareUpdate("name");
+//        Mockito.verify(collectionService)
+//                .updateName(Mockito.anyString(), Mockito.anyString());
+//        assertEquals(HttpStatus.NO_CONTENT.value(), result.getResponse().getStatus());
+//    }
+//
+//    @Test
+//    public void testUpdateCollectionCacheLimit() throws Exception {
+//        MvcResult result = prepareUpdate("limit");
+//        Mockito.verify(collectionService)
+//                .updateCacheLimit(Mockito.anyString(), Mockito.anyInt());
+//        assertEquals(HttpStatus.NO_CONTENT.value(), result.getResponse().getStatus());
+//    }
+//
+//    @Test
+//    public void testUpdateCollectionAlgorithm() throws Exception {
+//        MvcResult result = prepareUpdate("algorithm");
+//        Mockito.verify(collectionService)
+//                .updateAlgorithm(Mockito.anyString(), Mockito.anyString());
+//        assertEquals(HttpStatus.NO_CONTENT.value(), result.getResponse().getStatus());
+//    }
+//
+//    private MvcResult prepareUpdate(String changeableValue) throws Exception {
+//        RequestBuilder requestBuilder = MockMvcRequestBuilders
+//                .put("/rest/cats/" + changeableValue)
+//                .accept(MediaType.APPLICATION_JSON)
+//                .content(exampleCollectionJson)
+//                .contentType(MediaType.APPLICATION_JSON);
+//        return mockMvc.perform(requestBuilder).andReturn();
+//    }
 }

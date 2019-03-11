@@ -46,8 +46,8 @@ public interface CollectionDAO<C> {
      * Returns list of collections from Data base starting with
      * the specified page and limited in specified size.
      *
-     * @param page - number of page
+     * @param objectToCompare - object to compare with
      * @param size - quantity of output collections
      */
-    List<C> list(int page, int size);
+    List<C> list(String objectToCompare, int size);
 }

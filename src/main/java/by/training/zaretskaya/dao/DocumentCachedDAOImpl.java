@@ -58,7 +58,7 @@ public class DocumentCachedDAOImpl implements DocumentDAO<Document> {
     }
 
     @Override
-    public List list(String nameCollection, int page, int size) {
-        return documentDAO.list(nameCollection, page, size);
+    public List<Document> list(String nameCollection, String objectToCompare, int size) {
+        return documentDAO.list(nameCollection, objectToCompare, size);
     }
 }

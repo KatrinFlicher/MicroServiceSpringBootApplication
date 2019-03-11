@@ -2,7 +2,7 @@ package by.training.zaretskaya.models;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-public class Document {
+public class Document implements Cloneable{
     private String key;
     private String value;
 
@@ -37,5 +37,9 @@ public class Document {
                 "key='" + key + '\'' +
                 ", value='" + value + '\'' +
                 '}';
+    }
+
+    public Document clone() throws CloneNotSupportedException {
+        return (Document) super.clone();
     }
 }

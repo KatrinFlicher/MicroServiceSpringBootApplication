@@ -24,8 +24,8 @@ public class CollectionCachedDAOImpl implements CollectionDAO<Collection> {
 
     @PostConstruct
     void fillMap() {
-        int startPage = 1;
-        List<Collection> list = collectionDao.list(startPage, Constants.MAX_SIZE_FOR_CACHE_COLLECTIONS);
+        List<Collection> list = collectionDao.list(Constants.DEFAULT_OBJECT_TO_COMPARE,
+                Constants.MAX_SIZE_FOR_CACHE_COLLECTIONS);
         list.stream().forEach((collection) -> {
             collection.setCache(FactoryCache
                     .createCache(collection.getAlgorithm(), collection.getCacheLimit()));
@@ -65,7 +65,7 @@ public class CollectionCachedDAOImpl implements CollectionDAO<Collection> {
     }
 
     @Override
-    public List<Collection> list(int page, int size) {
-        return collectionDao.list(page, size);
+    public List<Collection> list(String objectToCompare, int size) {
+        return collectionDao.list(objectToCompare, size);
     }
 }

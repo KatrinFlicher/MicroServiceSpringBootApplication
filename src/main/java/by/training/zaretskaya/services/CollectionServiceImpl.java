@@ -40,14 +40,13 @@ public class CollectionServiceImpl implements ICollectionService<Collection> {
 
     @Override
     public void update(String name, Collection collection) {
-        validator.checkExistenceOfCollection(name);
         validator.checkValidationCollection(collection);
         collectionDAO.update(name, collection);
     }
 
     @Override
-    public List<Collection> listCollections(int page, int size) {
-        return collectionDAO.list(page, size);
+    public List<Collection> listCollections(String objectToCompare, int size) {
+        return collectionDAO.list(objectToCompare, size);
     }
 
 }

@@ -11,5 +11,5 @@ public interface IDocumentService<D> {
 
     void update(String nameCollection, String nameResource, D document);
 
-    List list(String nameCollection, int page, int size);
+    List<D> list(String nameCollection, String objectToCompare, int size);
 }

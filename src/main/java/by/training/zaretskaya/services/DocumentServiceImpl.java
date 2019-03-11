@@ -36,20 +36,18 @@ public class DocumentServiceImpl implements IDocumentService<Document> {
 
     @Override
     public void delete(String nameCollection, String nameResource) {
-        validator.checkExistenceOfCollectionAndDocument(nameCollection, nameResource);
         documentDAO.delete(nameCollection, nameResource);
     }
 
     @Override
     public void update(String nameCollection, String nameResource, Document document) {
-        validator.checkExistenceOfCollectionAndDocument(nameCollection, nameResource);
         validator.validationDocumentUnderTheScheme(nameCollection, document);
         documentDAO.update(nameCollection, nameResource, document);
     }
 
     @Override
-    public List list(String nameCollection, int page, int size) {
+    public List<Document> list(String nameCollection, String objectToCompare, int size) {
         validator.checkExistenceOfCollection(nameCollection);
-        return documentDAO.list(nameCollection, page, size);
+        return documentDAO.list(nameCollection, objectToCompare, size);
     }
 }

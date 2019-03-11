@@ -15,6 +15,7 @@ import org.springframework.stereotype.Component;
 import javax.transaction.Transactional;
 import java.util.List;
 
+
 @Component
 @Qualifier("DocumentDao")
 @Transactional
@@ -55,9 +56,9 @@ public class DocumentDaoImpl implements DocumentDAO<Document> {
     }
 
     @Override
-    public List<Object> list(String nameCollection, int page, int size) {
+    public List<Document> list(String nameCollection, String objectToCompare, int size) {
         String sqlQuery = prepareSqlQuery(nameCollection, SQLConstants.SELECT_ALL_DOCUMENTS_FROM_TABLE);
-        return jdbcTemplate.query(sqlQuery, new Object[]{size, (page - 1) * size},
+        return jdbcTemplate.query(sqlQuery, new Object[]{objectToCompare, size},
                 new BeanPropertyRowMapper(Document.class));
     }
 

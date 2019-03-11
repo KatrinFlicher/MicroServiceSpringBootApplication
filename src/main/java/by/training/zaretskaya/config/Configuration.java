@@ -13,7 +13,7 @@ import java.util.List;
 import java.util.Map;
 
 public class Configuration {
-    static Map<Integer, List> listNodes;
+    static Map<Integer, List<Node>> listNodes;
     static Map<String, Node> nodesAll;
     static private Node currentNode;
 
@@ -70,7 +70,7 @@ public class Configuration {
         return nodesAll;
     }
 
-    public static Map getAllGroups() {
+    public static Map<Integer, List<Node>> getAllGroups() {
         return listNodes;
     }
 

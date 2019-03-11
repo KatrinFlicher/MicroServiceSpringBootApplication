@@ -51,9 +51,9 @@ public interface DocumentDAO<D> {
      * Returns list of documents for the specified table from Data base starting with
      * the specified page and limited in specified size.
      *
-     * @param nameCollection - name of table collection
-     * @param page           - number of page
-     * @param size           - quantity of output collections
+     * @param nameCollection  - name of table collection
+     * @param objectToCompare - object to compare with
+     * @param size            - quantity of output collections
      */
-    List list(String nameCollection, int page, int size);
+    List<D> list(String nameCollection, String objectToCompare, int size);
 }

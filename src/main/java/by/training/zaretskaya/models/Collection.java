@@ -10,7 +10,7 @@ import javax.persistence.*;
 @Entity
 @Table(name = "collection")
 @NamedQuery(name = "Collection.findAllCollections",
-        query = "SELECT c from Collection c")
+        query = "SELECT c from Collection c where c.name > :name order by c.name")
 public class Collection implements Cloneable {
     @JsonIgnore
     @Transient
@@ -43,9 +43,6 @@ public class Collection implements Cloneable {
     public void setCache(ICache<String, Document> cache) {
         this.cache = cache;
     }
-
-
-
 
     public String getName() {
         return name;
@@ -84,9 +81,7 @@ public class Collection implements Cloneable {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
-
         Collection that = (Collection) o;
-
         return getName() != null ? getName().equals(that.getName()) : that.getName() == null;
     }
 
@@ -94,7 +89,6 @@ public class Collection implements Cloneable {
     public int hashCode() {
         return getName() != null ? getName().hashCode() : 0;
     }
-
 
     @Override
     public String toString() {

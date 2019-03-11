@@ -1,7 +1,7 @@
 package by.training.zaretskaya.controllers;
 
 import by.training.zaretskaya.constants.Constants;
-import by.training.zaretskaya.distribution.DistributedService2;
+import by.training.zaretskaya.distribution.DistributedService;
 import by.training.zaretskaya.distribution.RollbackService;
 import by.training.zaretskaya.exception.FailedOperationException;
 import by.training.zaretskaya.exception.SomethingWrongWithDataBaseException;
@@ -17,6 +17,7 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/rest")
@@ -26,12 +27,31 @@ public class CollectionController {
     ICollectionService<Collection> collectionService;
 
     @Autowired
-    DistributedService2 distributedService;
+    DistributedService distributedService;
 
     @Autowired
     RollbackService rollbackService;
 
-    //Attempt to remove path in creating location!!!
+
+    @GetMapping("/{idCollection}")
+    public Collection getCollectionById(@PathVariable String idCollection,
+                                        @RequestHeader(name = "replica", required = false, defaultValue = "false")
+                                                boolean flagReplica) {
+        if (distributedService.isMyGroup(idCollection)) {
+            try {
+                return collectionService.getById(idCollection);
+            } catch (SomethingWrongWithDataBaseException e) {
+                if (!flagReplica) {
+                    return (Collection) distributedService.sendGetObject(idCollection);
+                } else {
+                    throw new FailedOperationException();
+                }
+            }
+        } else {
+            return (Collection) distributedService.redirectGet(idCollection);
+        }
+    }
+
     @PostMapping
     public ResponseEntity createCollection(@RequestBody Collection collection,
                                            @RequestHeader(name = "counter", required = false,
@@ -57,67 +77,20 @@ public class CollectionController {
                 throw new FailedOperationException();
             }
         } else {
-            return distributedService.redirectPost(collection);
-        }
-    }
-
-    @GetMapping
-    public List<Collection> listCollections
-            (@RequestParam(required = false,
-                    defaultValue = Constants.START_PAGE) int page,
-             @RequestParam(required = false,
-                     defaultValue = Constants.DEFAULT_LIMIT_SIZE) int size) {
-        return collectionService.listCollections(page, size);
-    }
-
-    @GetMapping("/{idCollection}")
-    public Collection getCollectionById(@PathVariable String idCollection,
-                                        @RequestHeader(name = "counter", required = false,
-                                                defaultValue = "0") int counter) {
-        if (distributedService.isMyGroup(idCollection)) {
-            try {
-                return collectionService.getById(idCollection);
-            } catch (SomethingWrongWithDataBaseException e) {
-                return (Collection) distributedService.sendGetObject(counter, idCollection);
-            }
-        } else {
-            return (Collection) distributedService.redirect(idCollection, HttpMethod.GET);
-        }
-    }
-
-    @DeleteMapping("/{idCollection}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteCollection(@PathVariable String idCollection,
-                                 @RequestHeader(name = "counter", required = false,
-                                         defaultValue = "0") int counter,
-                                 @RequestHeader(name = "rollback", required = false,
-                                         defaultValue = "false") boolean flagRollback)
-            throws CloneNotSupportedException {
-        if (distributedService.isMyGroup(idCollection)) {
-            Collection collectionOldValue = collectionService.getById(idCollection).clone();
-            try {
-                collectionService.delete(idCollection);
-                distributedService.sendDeleteObject(counter, flagRollback, idCollection);
-            } catch (SomethingWrongWithDataBaseException | ResourceAccessException e) {
-                if (e instanceof ResourceAccessException) {
-                    collectionService.create(collectionOldValue);
-                }
-                rollbackService.rollback(collectionOldValue, counter, HttpMethod.DELETE, idCollection);
-            }
-        } else {
-            distributedService.redirect(idCollection, HttpMethod.DELETE);
+            return distributedService.redirectPost(collection, collection.getName());
         }
     }
 
     @PutMapping("/{idCollection}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void updateCollection(@PathVariable String idCollection,
-                                     @RequestBody Collection collection,
-                                     @RequestHeader(name = "counter", required = false,
-                                             defaultValue = "0") int counter,
-                                     @RequestHeader(name = "rollback", required = false,
-                                             defaultValue = "false") boolean flagRollback) throws CloneNotSupportedException {
+                                 @RequestBody Collection collection,
+                                 @RequestHeader(name = "counter", required = false, defaultValue = "0") int counter,
+                                 @RequestHeader(name = "rollback", required = false, defaultValue = "false")
+                                         boolean flagRollback)
+            throws CloneNotSupportedException {
         if (distributedService.isMyGroup(idCollection)) {
+            //Instead Validator in Service
             Collection collectionOldValue = collectionService.getById(idCollection).clone();
             try {
                 collectionService.update(idCollection, collection);
@@ -130,7 +103,57 @@ public class CollectionController {
                 rollbackService.rollback(collectionOldValue, counter, HttpMethod.PUT, idCollection);
             }
         } else {
-            distributedService.redirectPut(idCollection, collection);
+            distributedService.redirectPut(collection, idCollection);
         }
+    }
+
+    @DeleteMapping("/{idCollection}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteCollection(@PathVariable String idCollection,
+                                 @RequestHeader(name = "counter", required = false, defaultValue = "0") int counter,
+                                 @RequestHeader(name = "rollback", required = false, defaultValue = "false")
+                                         boolean flagRollback)
+            throws CloneNotSupportedException {
+        if (distributedService.isMyGroup(idCollection)) {
+            Collection collectionOldValue = collectionService.getById(idCollection).clone();
+            try {
+                collectionService.delete(idCollection);
+                distributedService.sendDeleteObject(counter, flagRollback, idCollection);
+            } catch (SomethingWrongWithDataBaseException | ResourceAccessException e) {
+                if (e instanceof ResourceAccessException) {
+                    collectionService.create(collectionOldValue);
+                }
+                rollbackService.rollback(collectionOldValue, counter, HttpMethod.DELETE, collectionOldValue.getName());
+            }
+        } else {
+            distributedService.redirectDelete(idCollection);
+        }
+    }
+
+    @GetMapping
+    public List<Collection> listCollections
+            (@RequestParam(required = false,
+                    defaultValue = Constants.DEFAULT_OBJECT_TO_COMPARE) String compare,
+             @RequestParam(required = false,
+                     defaultValue = Constants.DEFAULT_LIMIT_SIZE) int size,
+             @RequestHeader(name = "main", required = false,
+                     defaultValue = "true") boolean mainGroup,
+             @RequestHeader(name = "replica", required = false,
+                     defaultValue = "false") boolean flagReplica) {
+        List<Collection> collections;
+        try {
+            collections = collectionService.listCollections(compare, size);
+        } catch (SomethingWrongWithDataBaseException e) {
+            //Чтоб не стучаться дальше
+            if (flagReplica) {
+                throw new FailedOperationException();
+            }
+            collections = distributedService.sendListToReplica(compare, size)
+                    .stream().map((obj) -> (Collection) obj).collect(Collectors.toList());
+        }
+        if (mainGroup) {
+            return distributedService.redirectListCollection(compare, size, collections);
+        }
+        return collections;
     }
 }

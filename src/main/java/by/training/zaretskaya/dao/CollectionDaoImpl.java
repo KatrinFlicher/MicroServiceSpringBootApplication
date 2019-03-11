@@ -13,7 +13,6 @@ import org.springframework.stereotype.Component;
 
 import javax.persistence.*;
 import javax.transaction.Transactional;
-import java.sql.SQLException;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -57,7 +56,8 @@ public class CollectionDaoImpl implements CollectionDAO<Collection> {
         try {
             collection = entityManager.find(Collection.class, name);
         } catch (Exception e) {
-            throw new SomethingWrongWithDataBaseException();
+            System.err.println(e);
+//        throw new SomethingWrongWithDataBaseException();
         }
         if (collection == null) {
             throw new ResourceNotFoundException(Constants.RESOURCE_COLLECTION, name);
@@ -83,24 +83,23 @@ public class CollectionDaoImpl implements CollectionDAO<Collection> {
 
     @Override
     public void update(String name, Collection collection) {
-        try{
+        try {
             Collection collectionFromDB = getById(name);
             collectionFromDB.setCacheLimit(collection.getCacheLimit());
             collectionFromDB.setAlgorithm(collection.getAlgorithm());
             entityManager.persist(collectionFromDB);
-        }
-        catch (Exception e){
+        } catch (Exception e) {
             throw new SomethingWrongWithDataBaseException();
         }
     }
 
     @SuppressWarnings("JpaQueryApiInspection")
     @Override
-    public List<Collection> list(int page, int size) {
+    public List<Collection> list(String objectToCompare, int size) {
         try {
             TypedQuery<Collection> query = entityManager
                     .createNamedQuery("Collection.findAllCollections", Collection.class);
-            query.setFirstResult((page - 1) * size);
+            query.setParameter("name", objectToCompare);
             query.setMaxResults(size);
             return query.getResultList();
         } catch (Exception e) {
