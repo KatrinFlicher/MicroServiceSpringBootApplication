@@ -5,6 +5,17 @@
         {"name":"node1","host":"http://localhost:8081"},
         {"name":"node2","host":"http://localhost:8082"},
         {"name":"node3","host":"http://localhost:8083"}
-      ]}
+      ]},
+    {"id":"1",
+      "list": [
+        {"name":"node4","host":"http://localhost:8084"},
+        {"name":"node5","host":"http://localhost:8085"},
+        {"name":"node6","host":"http://localhost:8086"}
+      ]},
+    {"id":"2",
+      "list": [
+        {"name":"node7","host":"http://localhost:8087"}
+      ]
+    }
   ]
 }
