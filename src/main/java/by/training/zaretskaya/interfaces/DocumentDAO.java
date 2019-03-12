@@ -2,6 +2,7 @@ package by.training.zaretskaya.interfaces;
 
 
 import by.training.zaretskaya.exception.ResourceNotFoundException;
+import by.training.zaretskaya.exception.SomethingWrongWithDataBaseException;
 
 import java.util.List;
 
@@ -17,6 +18,7 @@ public interface DocumentDAO<D> {
      *
      * @param nameCollection - name of collection
      * @param document       - Document instance
+     * @throws SomethingWrongWithDataBaseException - if there are some problems with connect to Data Base
      */
     void create(String nameCollection, D document);
 
@@ -25,7 +27,8 @@ public interface DocumentDAO<D> {
      *
      * @param nameCollection - name of table collection
      * @param nameResource   - name of document instance
-     * @throws ResourceNotFoundException - if document is not found in Data Base
+     * @throws ResourceNotFoundException           - if document is not found in Data Base
+     * @throws SomethingWrongWithDataBaseException - if there are some problems with connect to Data Base
      */
     D get(String nameCollection, String nameResource);
 
@@ -34,6 +37,7 @@ public interface DocumentDAO<D> {
      *
      * @param nameCollection - name of table collection
      * @param nameResource   - name of document instance
+     * @throws SomethingWrongWithDataBaseException - if there are some problems with connect to Data Base
      */
     void delete(String nameCollection, String nameResource);
 
@@ -44,6 +48,7 @@ public interface DocumentDAO<D> {
      * @param nameCollection - name of table collection
      * @param nameResource   - name of document instance
      * @param document       - undated Document instance
+     * @throws SomethingWrongWithDataBaseException - if there are some problems with connect to Data Base
      */
     void update(String nameCollection, String nameResource, D document);
 
@@ -54,6 +59,7 @@ public interface DocumentDAO<D> {
      * @param nameCollection  - name of table collection
      * @param objectToCompare - object to compare with
      * @param size            - quantity of output collections
+     * @throws SomethingWrongWithDataBaseException - if there are some problems with connect to Data Base
      */
     List<D> list(String nameCollection, String objectToCompare, int size);
 }

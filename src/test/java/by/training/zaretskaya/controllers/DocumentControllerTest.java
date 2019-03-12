@@ -93,17 +93,17 @@ public class DocumentControllerTest {
         assertEquals(HttpStatus.NO_CONTENT.value(), response.getStatus());
     }
 
-    @Test
-    public void listDocuments() throws Exception {
-        String expected = "[" + exampleDocumentJson + "," + exampleDocumentJson + "," + exampleDocumentJson + "]";
-        List<Document> documents = Arrays.asList(mockDocument, mockDocument, mockDocument);
-        Mockito.when(documentService
-                .list(Mockito.anyString(), Mockito.anyInt(), Mockito.anyInt()))
-                .thenReturn(documents);
-        RequestBuilder requestBuilder = MockMvcRequestBuilders
-                .get("/rest/doctors/docs")
-                .accept(MediaType.APPLICATION_JSON);
-        MvcResult result = mockMvc.perform(requestBuilder).andReturn();
-        JSONAssert.assertEquals(expected, result.getResponse().getContentAsString(), false);
-    }
+//    @Test
+//    public void listDocuments() throws Exception {
+//        String expected = "[" + exampleDocumentJson + "," + exampleDocumentJson + "," + exampleDocumentJson + "]";
+//        List<Document> documents = Arrays.asList(mockDocument, mockDocument, mockDocument);
+//        Mockito.when(documentService
+//                .list(Mockito.anyString(), Mockito.anyInt(), Mockito.anyInt()))
+//                .thenReturn(documents);
+//        RequestBuilder requestBuilder = MockMvcRequestBuilders
+//                .get("/rest/doctors/docs")
+//                .accept(MediaType.APPLICATION_JSON);
+//        MvcResult result = mockMvc.perform(requestBuilder).andReturn();
+//        JSONAssert.assertEquals(expected, result.getResponse().getContentAsString(), false);
+//    }
 }

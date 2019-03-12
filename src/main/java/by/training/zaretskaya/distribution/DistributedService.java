@@ -31,20 +31,25 @@ public class DistributedService {
     }
 
     public boolean isMyGroup(String id) {
-        return defineIdGroup(id).equals(Configuration.getCurrentNode().getIdGroup());
+        System.out.println("define" + defineIdGroup(id));
+        System.out.println("define" + Configuration.getCurrentNode());
+        System.out.println(listGroups);
+        return defineIdGroup(id) == Configuration.getCurrentNode().getIdGroup();
     }
 
     //GET send and redirect
 
-    public Object sendGetObject(String... parameters) {
+    public Object sendGetObject(Class classResource, String... parameters) {
         List<Node> list = new ArrayList<>(listGroups.get(Configuration.getCurrentNode().getIdGroup()));
         list.remove(Configuration.getCurrentNode());
         for (Node node : list) {
             try {
-                ResponseEntity<Object> responseEntity = restTemplate
+                System.out.println("send to" + node);
+                ResponseEntity responseEntity = restTemplate
                         .exchange(getURI(node.getHost(), parameters), HttpMethod.GET,
-                                new HttpEntity<>(getHeaders(Constants.REPLICA_ON)), Object.class);
+                                new HttpEntity<>(getHeaders(Constants.REPLICA_ON)), classResource);
                 if (responseEntity.getStatusCode().is2xxSuccessful()) {
+                    System.out.println(responseEntity);
                     return responseEntity.getBody();
                 }
             } catch (ResourceAccessException | HttpServerErrorException.ServiceUnavailable e) {
@@ -59,16 +64,38 @@ public class DistributedService {
         }
     }
 
-    public Object redirectGet(String... ids) {
+    public Object redirectGet(Class classResource, String... ids) {
         List<Node> list = listGroups.get(defineIdGroup(ids[Constants.POSITION_ID_COLLECTION]));
+        System.out.println("list" + list);
         for (Node node : list) {
             try {
-                return restTemplate.exchange(getURI(node.getHost(), ids), HttpMethod.GET,
-                        new HttpEntity<>(getHeaders()), Object.class);
+                ResponseEntity response = restTemplate.exchange
+                        (getURI(node.getHost(), ids),
+                        HttpMethod.GET,
+                        new HttpEntity<>(getHeaders()), classResource);
+                if(response.getStatusCode().is2xxSuccessful()){
+                    System.out.println(response.getBody());
+                    return response.getBody();
+                }
+                throwResourceException(ids);
             } catch (ResourceAccessException e) {
+                System.out.println("dot call" + node);
+            }
+            catch(HttpServerErrorException.ServiceUnavailable e){
+                throw new FailedOperationException();
             }
         }
         throw new FailedOperationException();
+    }
+
+    private void throwResourceException(String... parameters){
+        if (parameters.length == 2) {
+            throw new ResourceNotFoundException(Constants.RESOURCE_DOCUMENT,
+                    parameters[Constants.POSITION_ID_DOCUMENT]);
+        } else {
+            throw new ResourceNotFoundException(Constants.RESOURCE_COLLECTION,
+                    parameters[Constants.POSITION_ID_COLLECTION]);
+        }
     }
 
     //POST send and redirect
@@ -268,9 +295,10 @@ public class DistributedService {
         return Map.of("compare", objectToCompare, "size", String.valueOf(size));
     }
 
-
-    private Integer defineIdGroup(String id) {
-        return id.hashCode() % listGroups.size();
+    private int defineIdGroup(String id) {
+        System.out.println(listGroups.size());
+        System.out.println(id.hashCode());
+        return Math.abs(id.hashCode()) % listGroups.size();
     }
 
     private String constructURI(String host) {

@@ -11,19 +11,19 @@
     "username":"postgres",
     "password":"flicher"
   },
-  "node4": {"url":"jdbc:postgresql://localhost:5432/mydb4",
+  "node4": {"url":"jdbc:postgresql://localhost:5432/mydb3",
     "username":"postgres",
     "password":"flicher"
   },
-  "node5": {"url":"jdbc:postgresql://localhost:5432/mydb5",
+  "node5": {"url":"jdbc:postgresql://localhost:5432/mydb4",
     "username":"postgres",
     "password":"flicher"
   },
-  "node6": {"url":"jdbc:postgresql://localhost:5432/mydb6",
+  "node6": {"url":"jdbc:postgresql://localhost:5432/mydb5",
     "username":"postgres",
     "password":"flicher"
   },
-  "node7": {"url":"jdbc:postgresql://localhost:5432/mydb7",
+  "node7": {"url":"jdbc:postgresql://localhost:5432/mydb6",
     "username":"postgres",
     "password":"flicher"
   }

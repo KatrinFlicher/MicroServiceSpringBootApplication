@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import javax.persistence.PersistenceException;
 import java.net.URI;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -40,15 +41,15 @@ public class CollectionController {
         if (distributedService.isMyGroup(idCollection)) {
             try {
                 return collectionService.getById(idCollection);
-            } catch (SomethingWrongWithDataBaseException e) {
+            } catch (PersistenceException e) {
                 if (!flagReplica) {
-                    return (Collection) distributedService.sendGetObject(idCollection);
+                    return (Collection) distributedService.sendGetObject(Collection.class, idCollection);
                 } else {
                     throw new FailedOperationException();
                 }
             }
         } else {
-            return (Collection) distributedService.redirectGet(idCollection);
+            return (Collection) distributedService.redirectGet(Collection.class, idCollection);
         }
     }
 

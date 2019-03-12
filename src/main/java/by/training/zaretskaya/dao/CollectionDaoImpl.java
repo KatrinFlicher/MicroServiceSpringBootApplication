@@ -44,25 +44,22 @@ public class CollectionDaoImpl implements CollectionDAO<Collection> {
             String sqlQuery = SQLConstants.CREATE_NAMED_TABLE_FOR_DOCUMENTS
                     .replace(SQLConstants.MOCK_NAME_COLLECTION, collection.getName());
             entityManager.createNativeQuery(sqlQuery).executeUpdate();
-//            entityManager.flush();
-        } catch (Exception e) {
-            throw new SomethingWrongWithDataBaseException();
+        } catch (PersistenceException e) {
+            throw new SomethingWrongWithDataBaseException(e);
         }
     }
 
     @Override
     public Collection getById(String name) {
-        Collection collection = null;
         try {
-            collection = entityManager.find(Collection.class, name);
-        } catch (Exception e) {
-            System.err.println(e);
-//        throw new SomethingWrongWithDataBaseException();
+            Collection collection = entityManager.find(Collection.class, name);
+            if (collection == null) {
+                throw new ResourceNotFoundException(Constants.RESOURCE_COLLECTION, name);
+            }
+            return collection;
+        } catch (PersistenceException e) {
+            throw new SomethingWrongWithDataBaseException(e);
         }
-        if (collection == null) {
-            throw new ResourceNotFoundException(Constants.RESOURCE_COLLECTION, name);
-        }
-        return collection;
     }
 
     @Override
@@ -71,13 +68,11 @@ public class CollectionDaoImpl implements CollectionDAO<Collection> {
             checkNameTable(name);
             Collection collection = getById(name);
             entityManager.remove(collection);
-//            entityManager.flush();
             String sqlQuery = SQLConstants.DROP_NAMED_DOCUMENT_TABLE
                     .replace(SQLConstants.MOCK_NAME_COLLECTION, name);
             entityManager.createNativeQuery(sqlQuery).executeUpdate();
-//            entityManager.flush();
-        } catch (Exception e) {
-            throw new SomethingWrongWithDataBaseException();
+        } catch (PersistenceException e) {
+            throw new SomethingWrongWithDataBaseException(e);
         }
     }
 
@@ -88,8 +83,8 @@ public class CollectionDaoImpl implements CollectionDAO<Collection> {
             collectionFromDB.setCacheLimit(collection.getCacheLimit());
             collectionFromDB.setAlgorithm(collection.getAlgorithm());
             entityManager.persist(collectionFromDB);
-        } catch (Exception e) {
-            throw new SomethingWrongWithDataBaseException();
+        } catch (PersistenceException e) {
+            throw new SomethingWrongWithDataBaseException(e);
         }
     }
 
@@ -102,8 +97,8 @@ public class CollectionDaoImpl implements CollectionDAO<Collection> {
             query.setParameter("name", objectToCompare);
             query.setMaxResults(size);
             return query.getResultList();
-        } catch (Exception e) {
-            throw new SomethingWrongWithDataBaseException();
+        } catch (PersistenceException e) {
+            throw new SomethingWrongWithDataBaseException(e);
         }
     }
 }

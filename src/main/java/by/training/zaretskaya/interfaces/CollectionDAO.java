@@ -2,11 +2,12 @@ package by.training.zaretskaya.interfaces;
 
 
 import by.training.zaretskaya.exception.ResourceNotFoundException;
+import by.training.zaretskaya.exception.SomethingWrongWithDataBaseException;
 
 import java.util.List;
 
 /**
- * Interface with CRUD operations with the entity Collection in DB
+ * Interface with CRUD operations with the entity Collection in Data Base
  *
  * @author Zaretskaya Katsiaryna
  * @version 1.0
@@ -16,6 +17,7 @@ public interface CollectionDAO<C> {
      * Creates new Collection instance  in Data base.
      *
      * @param collection - Collection instance
+     * @throws SomethingWrongWithDataBaseException - if there are some problems with connect to Data Base
      */
     void create(C collection);
 
@@ -24,6 +26,7 @@ public interface CollectionDAO<C> {
      *
      * @param name - name of collection instance
      * @throws ResourceNotFoundException - if collection is not found in Data Base
+     * @throws SomethingWrongWithDataBaseException - if there are some problems with connect to Data Base
      */
     C getById(String name);
 
@@ -31,6 +34,7 @@ public interface CollectionDAO<C> {
      * Removes the mapping collection for a name from Data base if it is present.
      *
      * @param name - name of collection instance
+     * @throws SomethingWrongWithDataBaseException - if there are some problems with connect to Data Base
      */
     void delete(String name);
 
@@ -39,6 +43,7 @@ public interface CollectionDAO<C> {
      *
      * @param name       - name of collection instance
      * @param collection - new instance of collection with new cache limit and algorithm
+     * @throws SomethingWrongWithDataBaseException - if there are some problems with connect to Data Base
      */
     void update(String name, C collection);
 
@@ -48,6 +53,7 @@ public interface CollectionDAO<C> {
      *
      * @param objectToCompare - object to compare with
      * @param size - quantity of output collections
+     * @throws SomethingWrongWithDataBaseException - if there are some problems with connect to Data Base
      */
     List<C> list(String objectToCompare, int size);
 }

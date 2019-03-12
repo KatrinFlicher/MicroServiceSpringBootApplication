@@ -43,13 +43,13 @@ public class DocumentController {
                 return documentService.get(idCollection, idDoc);
             } catch (SomethingWrongWithDataBaseException e) {
                 if (!flagReplica) {
-                    return (Document) distributedService.sendGetObject(idCollection, idDoc);
+                    return (Document) distributedService.sendGetObject(Document.class, idCollection, idDoc);
                 } else {
                     throw new FailedOperationException();
                 }
             }
         } else {
-            return (Document) distributedService.redirectGet(idCollection, idDoc);
+            return (Document) distributedService.redirectGet(Document.class, idCollection, idDoc);
         }
     }
 
