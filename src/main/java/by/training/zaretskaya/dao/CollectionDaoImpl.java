@@ -13,6 +13,7 @@ import org.springframework.stereotype.Component;
 
 import javax.persistence.*;
 import javax.transaction.Transactional;
+import java.io.FileNotFoundException;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -99,6 +100,17 @@ public class CollectionDaoImpl implements CollectionDAO<Collection> {
             return query.getResultList();
         } catch (PersistenceException e) {
             throw new SomethingWrongWithDataBaseException(e);
+        }
+    }
+
+    @Override
+    public boolean consist(String name) {
+        try{
+            getById(name);
+            return true;
+        }
+        catch (ResourceNotFoundException e){
+            return false;
         }
     }
 }

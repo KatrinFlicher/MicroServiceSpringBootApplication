@@ -68,4 +68,12 @@ public class CollectionCachedDAOImpl implements CollectionDAO<Collection> {
     public List<Collection> list(String objectToCompare, int size) {
         return collectionDao.list(objectToCompare, size);
     }
+
+    @Override
+    public boolean consist(String name) {
+        if (!mapCollection.contains(name)){
+            return collectionDao.consist(name);
+        }
+        return true;
+    }
 }

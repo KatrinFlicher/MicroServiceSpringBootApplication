@@ -14,4 +14,8 @@ public class ResourceNotFoundException extends RuntimeException {
                 .replace(identifierResource, nameResource)
                 .replace(identifierId, id));
     }
+
+    public ResourceNotFoundException(String message) {
+        super(message);
+    }
 }

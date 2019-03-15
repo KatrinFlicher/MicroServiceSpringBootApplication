@@ -14,4 +14,8 @@ public class ResourceIsExistException extends RuntimeException {
                 .replace(identifierResource, nameResource)
                 .replace(identifierId, id));
     }
+
+    public ResourceIsExistException(String message) {
+        super(message);
+    }
 }

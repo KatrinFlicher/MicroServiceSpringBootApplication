@@ -61,4 +61,15 @@ public class DocumentCachedDAOImpl implements DocumentDAO<Document> {
     public List<Document> list(String nameCollection, String objectToCompare, int size) {
         return documentDAO.list(nameCollection, objectToCompare, size);
     }
+
+    @Override
+    public boolean consist(String nameCollection, String nameResource) {
+        ICache<String, Document> cache = collectionDAO
+                .getById(nameCollection)
+                .getCache();
+        if (!cache.contains(nameResource)){
+            return documentDAO.consist(nameCollection, nameResource);
+        }
+        return true;
+    }
 }

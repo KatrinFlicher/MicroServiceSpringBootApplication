@@ -62,4 +62,6 @@ public interface DocumentDAO<D> {
      * @throws SomethingWrongWithDataBaseException - if there are some problems with connect to Data Base
      */
     List<D> list(String nameCollection, String objectToCompare, int size);
+
+    boolean consist(String nameCollection, String nameResource);
 }

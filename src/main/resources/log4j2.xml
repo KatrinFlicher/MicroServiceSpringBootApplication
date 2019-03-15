@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration monitorInterval="60">
+    <Properties>
+        <Property name="log-path">logs</Property>
+    </Properties>
+    <Appenders>
+        <Console name="Console-Appender" target="SYSTEM_OUT">
+            <PatternLayout>
+                <pattern>
+                    %clr{%d{yyyy-MM-dd HH:mm:ss}}{faint} %clr{${sys:PID}}{magenta} %clr{%5p}  %clr{Thread id -}{faint} %clr{[%T]}{faint} %clr{%-40.40c{1.}}{cyan} %clr{:}{faint} %m%n%xwEx
+                </pattern>
+            </PatternLayout>
+        </Console>
+        <File name="File-Appender" fileName="${log-path}/app_log.log" >
+            <PatternLayout>
+                <pattern>
+                    [%-5level] %d{yyyy-MM-dd HH:mm:ss.SSS} [%T] %c{1} - %msg%n
+                </pattern>
+            </PatternLayout>
+        </File>
+    </Appenders>
+    <Loggers>
+        <Logger name="by.training.zaretskaya" level="debug">
+            <AppenderRef ref="File-Appender" level="error"/>
+        </Logger>
+        <Root level="info">
+            <AppenderRef ref="Console-Appender"/>
+        </Root>
+    </Loggers>
+</Configuration>

@@ -68,13 +68,12 @@ public class Collection implements Cloneable {
         this.algorithm = algorithm;
     }
 
-    @JsonIgnore
-    public String getJsonScheme() {
-        return jsonScheme;
-    }
-
     public void setJsonScheme(String jsonScheme) {
         this.jsonScheme = jsonScheme;
+    }
+
+    public String getJsonScheme() {
+        return jsonScheme;
     }
 
     @Override

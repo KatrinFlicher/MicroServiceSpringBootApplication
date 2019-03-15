@@ -4,7 +4,6 @@ import by.training.zaretskaya.constants.Constants;
 import by.training.zaretskaya.exception.CollectionWrongParameters;
 import by.training.zaretskaya.exception.DocumentIsInvalidUnderTheScheme;
 import by.training.zaretskaya.exception.ResourceIsExistException;
-import by.training.zaretskaya.exception.ResourceNotFoundException;
 import by.training.zaretskaya.impl.FactoryCache;
 import by.training.zaretskaya.interfaces.CollectionDAO;
 import by.training.zaretskaya.interfaces.DocumentDAO;
@@ -30,12 +29,8 @@ public class EntityValidator {
 
 
     public void checkNewNameForTable(String newName) {
-        try {
-            collectionDAO.getById(newName);
+        if (collectionDAO.consist(newName)) {
             throw new ResourceIsExistException(Constants.RESOURCE_COLLECTION, newName);
-        } catch (ResourceNotFoundException e) {
-            //We can update name of table
-            //I know that it's bad practice to leave the block "catch" empty, but I don't assume what is written here.
         }
     }
 
@@ -60,11 +55,8 @@ public class EntityValidator {
     }
 
     public void checkAbsenceOfNewDocumentInTheTable(String collectionName, String documentName) {
-        try {
-            documentDAO.get(collectionName, documentName);
+        if (documentDAO.consist(collectionName, documentName)) {
             throw new ResourceIsExistException(Constants.RESOURCE_DOCUMENT, documentName);
-        } catch (ResourceNotFoundException e) {
-            //Also
         }
     }
 
@@ -78,5 +70,4 @@ public class EntityValidator {
             throw new DocumentIsInvalidUnderTheScheme();
         }
     }
-
 }

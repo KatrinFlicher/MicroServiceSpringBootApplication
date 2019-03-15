@@ -13,10 +13,8 @@ public class Constants {
     //Exceptions
     public static final String NEGATIVE_CACHE_LIMIT = "Cache limit with $value is impossible.";
     public static final String INCOMPATIBLE_FORMAT_CACHE_ALGORITHM = "Format $value for cache algorithm is incompatible.";
-
-    public static final String VARIABLE_FIELD_NAME = "name";
-    public static final String VARIABLE_FIELD_LIMIT = "limit";
-    public static final String VARIABLE_FIELD_ALGORITHM = "algorithm";
+    public static final String COLLECTION_NAME_NOT_SUPPORTED = "This name for collection is not supported.";
+    public static final String DOCUMENT_IS_INVALID_UNDER_THE_SCHEME = "Document is not supported to the json scheme.";
 
     public static final boolean ROLLBACK_ON = true;
     public static final boolean REPLICA_ON = true;
@@ -26,5 +24,7 @@ public class Constants {
     public static final int POSITION_ID_DOCUMENT = 1;
     public static final String NAME_APPLICATION = "/rest/";
     public static final String DOCUMENTS = "/docs/";
+
+
 
 }

@@ -83,6 +83,17 @@ public class DocumentDaoImpl implements DocumentDAO<Document> {
 
     }
 
+    @Override
+    public boolean consist(String nameCollection, String nameResource) {
+        try{
+            get(nameCollection, nameResource);
+            return true;
+        }
+        catch (ResourceNotFoundException e){
+            return false;
+        }
+    }
+
     private String prepareSqlQuery(String nameTable, String query) {
         return query.replace(SQLConstants.MOCK_NAME_COLLECTION, nameTable);
     }

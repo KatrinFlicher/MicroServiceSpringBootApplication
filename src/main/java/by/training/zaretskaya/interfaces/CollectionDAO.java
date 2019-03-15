@@ -56,4 +56,6 @@ public interface CollectionDAO<C> {
      * @throws SomethingWrongWithDataBaseException - if there are some problems with connect to Data Base
      */
     List<C> list(String objectToCompare, int size);
+
+    boolean consist(String name);
 }
