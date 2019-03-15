@@ -8,8 +8,6 @@ import by.training.zaretskaya.models.Collection;
 import by.training.zaretskaya.models.Document;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -28,11 +26,12 @@ public class DistributedService {
     private static final Logger log = LogManager.getLogger(DistributedService.class);
     private Map<Integer, List<Node>> listGroups;
 
-    @Autowired
+    //    @Autowired
     private RestTemplate restTemplate;
 
     public DistributedService() {
         listGroups = Configuration.getAllGroups();
+        restTemplate = new RestTemplate();
     }
 
     public boolean isMyGroup(String id) {
@@ -42,7 +41,7 @@ public class DistributedService {
 
     //GET send and redirect
 
-    public Object sendGetObject(Class classResource, String... parameters) {
+    public Object sendGetObject(String nameClass, String... parameters) throws ClassNotFoundException {
         List<Node> list = new ArrayList<>(listGroups.get(Configuration.getCurrentNode().getIdGroup()));
         list.remove(Configuration.getCurrentNode());
         for (Node node : list) {
@@ -50,7 +49,7 @@ public class DistributedService {
                 log.info("Send GET request to " + node.getHost());
                 ResponseEntity responseEntity = restTemplate
                         .exchange(getURI(node.getHost(), parameters), HttpMethod.GET,
-                                new HttpEntity<>(getHeadersForReplica()), classResource);
+                                new HttpEntity<>(getHeadersForReplica()), Class.forName(nameClass));
                 if (responseEntity.getStatusCode().is2xxSuccessful()) {
                     log.info("Response is received from " + node.getHost());
                     return responseEntity.getBody();
@@ -67,7 +66,7 @@ public class DistributedService {
         throw new FailedOperationException();
     }
 
-    public Object redirectGet(Class classResource, String... ids) {
+    public Object redirectGet(String nameClass, String... ids) throws ClassNotFoundException {
         int idGroup = defineIdGroup(ids[Constants.POSITION_ID_COLLECTION]);
         log.info("Redirect GET request to " + idGroup + " group");
         List<Node> list = listGroups.get(idGroup);
@@ -76,7 +75,7 @@ public class DistributedService {
                 ResponseEntity response = restTemplate.exchange
                         (getURI(node.getHost(), ids),
                                 HttpMethod.GET,
-                                new HttpEntity<>(getHeaders()), classResource);
+                                new HttpEntity<>(getHeaders()), Class.forName(nameClass));
                 if (response.getStatusCode().is2xxSuccessful()) {
                     log.info("Response is received from " + node.getHost());
                     return response.getBody();
@@ -348,7 +347,10 @@ public class DistributedService {
 
 
     private Map<String, String> getParamsForRequest(String objectToCompare, int size) {
-        return Map.of("compare", objectToCompare, "size", String.valueOf(size));
+        HashMap<String, String> map = new HashMap<>();
+        map.put("compare", objectToCompare);
+        map.put("size", String.valueOf(size));
+        return map;
     }
 
     private int defineIdGroup(String id) {

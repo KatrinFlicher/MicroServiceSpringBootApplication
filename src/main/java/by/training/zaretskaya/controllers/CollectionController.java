@@ -26,7 +26,6 @@ import java.util.stream.Collectors;
 public class CollectionController {
     private static final Logger log = LogManager.getLogger(CollectionController.class);
 
-
     @Autowired
     ICollectionService<Collection> collectionService;
 
@@ -40,7 +39,7 @@ public class CollectionController {
     @GetMapping("/{idCollection}")
     public Collection getCollectionById(@PathVariable String idCollection,
                                         @RequestHeader(name = "replica", required = false, defaultValue = "false")
-                                                boolean flagReplica) {
+                                                boolean flagReplica) throws ClassNotFoundException {
         if (distributedService.isMyGroup(idCollection)) {
             try {
                 Collection collection = collectionService.getById(idCollection);
@@ -49,13 +48,13 @@ public class CollectionController {
             } catch (SomethingWrongWithDataBaseException e) {
                 log.error("Problem with Data Base in " + Configuration.getCurrentNode().getName(), e);
                 if (!flagReplica) {
-                    return (Collection) distributedService.sendGetObject(Collection.class, idCollection);
+                    return (Collection) distributedService.sendGetObject(Collection.class.getName(), idCollection);
                 } else {
                     throw new FailedOperationException();
                 }
             }
         } else {
-            return (Collection) distributedService.redirectGet(Collection.class, idCollection);
+            return (Collection) distributedService.redirectGet(Collection.class.getName(), idCollection);
         }
     }
 

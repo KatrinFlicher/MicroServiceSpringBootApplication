@@ -40,7 +40,7 @@ public class DocumentController {
     Document getDocument(@PathVariable String idCollection,
                          @PathVariable String idDoc,
                          @RequestHeader(name = "replica", required = false, defaultValue = "false")
-                                 boolean flagReplica) {
+                                 boolean flagReplica) throws ClassNotFoundException {
         if (distributedService.isMyGroup(idCollection)) {
             try {
                 Document document = documentService.get(idCollection, idDoc);
@@ -49,13 +49,13 @@ public class DocumentController {
             } catch (SomethingWrongWithDataBaseException e) {
                 log.error("Problem with Data Base in " + Configuration.getCurrentNode().getName(), e);
                 if (!flagReplica) {
-                    return (Document) distributedService.sendGetObject(Document.class, idCollection, idDoc);
+                    return (Document) distributedService.sendGetObject(Document.class.getName(), idCollection, idDoc);
                 } else {
                     throw new FailedOperationException();
                 }
             }
         } else {
-            return (Document) distributedService.redirectGet(Document.class, idCollection, idDoc);
+            return (Document) distributedService.redirectGet(Document.class.getName(), idCollection, idDoc);
         }
     }
 
