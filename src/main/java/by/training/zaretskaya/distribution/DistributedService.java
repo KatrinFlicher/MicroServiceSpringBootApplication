@@ -8,6 +8,7 @@ import by.training.zaretskaya.models.Collection;
 import by.training.zaretskaya.models.Document;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -25,13 +26,12 @@ import java.util.*;
 public class DistributedService {
     private static final Logger log = LogManager.getLogger(DistributedService.class);
     private Map<Integer, List<Node>> listGroups;
-
-    //    @Autowired
+    @Autowired
     private RestTemplate restTemplate;
 
     public DistributedService() {
         listGroups = Configuration.getAllGroups();
-        restTemplate = new RestTemplate();
+//        restTemplate = new RestTemplate();
     }
 
     public boolean isMyGroup(String id) {
@@ -41,7 +41,7 @@ public class DistributedService {
 
     //GET send and redirect
 
-    public Object sendGetObject(String nameClass, String... parameters) throws ClassNotFoundException {
+    public Object sendGetObject(Class nameClass, String... parameters) throws ClassNotFoundException {
         List<Node> list = new ArrayList<>(listGroups.get(Configuration.getCurrentNode().getIdGroup()));
         list.remove(Configuration.getCurrentNode());
         for (Node node : list) {
@@ -49,7 +49,7 @@ public class DistributedService {
                 log.info("Send GET request to " + node.getHost());
                 ResponseEntity responseEntity = restTemplate
                         .exchange(getURI(node.getHost(), parameters), HttpMethod.GET,
-                                new HttpEntity<>(getHeadersForReplica()), Class.forName(nameClass));
+                                new HttpEntity<>(getHeadersForReplica()), nameClass);
                 if (responseEntity.getStatusCode().is2xxSuccessful()) {
                     log.info("Response is received from " + node.getHost());
                     return responseEntity.getBody();
@@ -66,7 +66,7 @@ public class DistributedService {
         throw new FailedOperationException();
     }
 
-    public Object redirectGet(String nameClass, String... ids) throws ClassNotFoundException {
+    public Object redirectGet(Class nameClass, String... ids) throws ClassNotFoundException {
         int idGroup = defineIdGroup(ids[Constants.POSITION_ID_COLLECTION]);
         log.info("Redirect GET request to " + idGroup + " group");
         List<Node> list = listGroups.get(idGroup);
@@ -75,7 +75,7 @@ public class DistributedService {
                 ResponseEntity response = restTemplate.exchange
                         (getURI(node.getHost(), ids),
                                 HttpMethod.GET,
-                                new HttpEntity<>(getHeaders()), Class.forName(nameClass));
+                                new HttpEntity<>(getHeaders()), nameClass);
                 if (response.getStatusCode().is2xxSuccessful()) {
                     log.info("Response is received from " + node.getHost());
                     return response.getBody();
@@ -330,16 +330,16 @@ public class DistributedService {
                         constructURIForDocument(node.getHost(), idCollection),
                         HttpMethod.GET,
                         new HttpEntity<>(getHeaders()),
-                        new ParameterizedTypeReference<>() {
+                        new ParameterizedTypeReference<List<Document>>() {
                         },
                         getParamsForRequest(objectToCompare, size));
                 if (responseEntity.getStatusCode().is2xxSuccessful()) {
                     return responseEntity.getBody();
                 }
+            }catch (HttpServerErrorException.ServiceUnavailable e) {
+                log.error("LIST request is failed in " + node.getName(), e);
             } catch (ResourceAccessException e) {
                 log.error("Node " + node.getName() + " is unavailable.", e);
-            } catch (HttpServerErrorException.ServiceUnavailable e) {
-                log.error("LIST request is failed in " + node.getName(), e);
             }
         }
         throw new FailedOperationException();
@@ -347,10 +347,7 @@ public class DistributedService {
 
 
     private Map<String, String> getParamsForRequest(String objectToCompare, int size) {
-        HashMap<String, String> map = new HashMap<>();
-        map.put("compare", objectToCompare);
-        map.put("size", String.valueOf(size));
-        return map;
+        return Map.of("compare", objectToCompare, "size", String.valueOf(size));
     }
 
     private int defineIdGroup(String id) {

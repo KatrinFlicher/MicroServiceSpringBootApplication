@@ -48,13 +48,13 @@ public class CollectionController {
             } catch (SomethingWrongWithDataBaseException e) {
                 log.error("Problem with Data Base in " + Configuration.getCurrentNode().getName(), e);
                 if (!flagReplica) {
-                    return (Collection) distributedService.sendGetObject(Collection.class.getName(), idCollection);
+                    return (Collection) distributedService.sendGetObject(Collection.class, idCollection);
                 } else {
                     throw new FailedOperationException();
                 }
             }
         } else {
-            return (Collection) distributedService.redirectGet(Collection.class.getName(), idCollection);
+            return (Collection) distributedService.redirectGet(Collection.class, idCollection);
         }
     }
 
