@@ -39,7 +39,7 @@ public class CollectionController {
     @GetMapping("/{idCollection}")
     public Collection getCollectionById(@PathVariable String idCollection,
                                         @RequestHeader(name = "replica", required = false, defaultValue = "false")
-                                                boolean flagReplica) throws ClassNotFoundException {
+                                                boolean flagReplica){
         if (distributedService.isMyGroup(idCollection)) {
             try {
                 Collection collection = collectionService.getById(idCollection);

@@ -47,23 +47,21 @@ public class DocumentServiceImplTest {
     @Test
     public void testDelete() {
         documentService.delete(nameCollection, mockDocument.getKey());
-        verify(validator).checkExistenceOfCollectionAndDocument(nameCollection, mockDocument.getKey());
         verify(documentDAO).delete(nameCollection, mockDocument.getKey());
     }
 
     @Test
     public void testUpdate() {
         documentService.update(nameCollection, mockDocument.getKey(), mockDocument);
-        verify(validator).checkExistenceOfCollectionAndDocument(nameCollection, mockDocument.getKey());
         verify(documentDAO).update(nameCollection, mockDocument.getKey(), mockDocument);
     }
 
-//    @Test
-//    public void testList() {
-//        List<Document> expectedDocuments = Arrays.asList(mockDocument, mockDocument, mockDocument);
-//        when(documentDAO.list(nameCollection, 1, 10)).thenReturn(expectedDocuments);
-//        List documents = documentService.list(nameCollection, 1, 10);
-//        verify(validator).checkExistenceOfCollection(nameCollection);
-//        assertEquals(expectedDocuments, documents);
-//    }
+    @Test
+    public void testList() {
+        List<Document> expectedDocuments = Arrays.asList(mockDocument, mockDocument, mockDocument);
+        when(documentDAO.list(nameCollection, "", 10)).thenReturn(expectedDocuments);
+        List documents = documentService.list(nameCollection, "", 10);
+        verify(validator).checkExistenceOfCollection(nameCollection);
+        assertEquals(expectedDocuments, documents);
+    }
 }

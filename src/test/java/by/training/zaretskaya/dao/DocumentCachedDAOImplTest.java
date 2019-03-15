@@ -52,9 +52,6 @@ public class DocumentCachedDAOImplTest {
     public void testCreateDocument() {
         documentCachedDAO.create(mockCollection.getName(), mockDocument);
         verify(documentDAO).create(mockCollection.getName(), mockDocument);
-        assertEquals(mockDocument, documentCachedDAO.get(mockCollection.getName(), mockDocument.getKey()));
-        verify(documentDAO, times(0))
-                .get(mockCollection.getName(), mockDocument.getKey());
     }
 
     @Test
@@ -78,20 +75,17 @@ public class DocumentCachedDAOImplTest {
 
     @Test
     public void testUpdateDocument() {
-        String newDocumentValue = "Doctor";
-        documentCachedDAO.create(mockCollection.getName(), mockDocument);
-        documentCachedDAO.update(mockCollection.getName(), mockDocument.getKey(),
-                new Document(mockDocument.getKey(), newDocumentValue));
-        verify(documentDAO).update(Mockito.anyString(), Mockito.anyString(), Mockito.any(Document.class));
-        assertEquals(newDocumentValue,
-                documentCachedDAO.get(mockCollection.getName(), mockDocument.getKey()).getValue());
+        Document updatedDocument = new Document(mockDocument.getKey(), "Doctor");
+        String key = mockDocument.getKey();
+        documentCachedDAO.update(mockCollection.getName(), key, updatedDocument);
+        verify(documentDAO).update(mockCollection.getName(), key, updatedDocument);
     }
 
-//    @Test
-//    public void testListDocuments() {
-//        List<Document> documents = Arrays.asList(mockDocument, mockDocument, mockDocument);
-//        Mockito.when(documentDAO.list(Mockito.anyString(), Mockito.anyInt(), Mockito.anyInt()))
-//                .thenReturn(documents);
-//        assertEquals(documents, documentCachedDAO.list(Mockito.anyString(), Mockito.anyInt(), Mockito.anyInt()));
-//    }
+    @Test
+    public void testListDocuments() {
+        List<Document> documents = Arrays.asList(mockDocument, mockDocument, mockDocument);
+        Mockito.when(documentDAO.list(Mockito.anyString(), Mockito.anyString(), Mockito.anyInt()))
+                .thenReturn(documents);
+        assertEquals(documents, documentCachedDAO.list(Mockito.anyString(), Mockito.anyString(), Mockito.anyInt()));
+    }
 }

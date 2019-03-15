@@ -25,13 +25,12 @@ import java.util.*;
 @Component
 public class DistributedService {
     private static final Logger log = LogManager.getLogger(DistributedService.class);
-    private Map<Integer, List<Node>> listGroups;
     @Autowired
     private RestTemplate restTemplate;
+    private Map<Integer, List<Node>> listGroups;
 
     public DistributedService() {
         listGroups = Configuration.getAllGroups();
-//        restTemplate = new RestTemplate();
     }
 
     public boolean isMyGroup(String id) {
@@ -41,7 +40,7 @@ public class DistributedService {
 
     //GET send and redirect
 
-    public Object sendGetObject(Class nameClass, String... parameters) throws ClassNotFoundException {
+    public Object sendGetObject(Class nameClass, String... parameters) {
         List<Node> list = new ArrayList<>(listGroups.get(Configuration.getCurrentNode().getIdGroup()));
         list.remove(Configuration.getCurrentNode());
         for (Node node : list) {
@@ -66,7 +65,7 @@ public class DistributedService {
         throw new FailedOperationException();
     }
 
-    public Object redirectGet(Class nameClass, String... ids) throws ClassNotFoundException {
+    public Object redirectGet(Class nameClass, String... ids) {
         int idGroup = defineIdGroup(ids[Constants.POSITION_ID_COLLECTION]);
         log.info("Redirect GET request to " + idGroup + " group");
         List<Node> list = listGroups.get(idGroup);
@@ -336,7 +335,7 @@ public class DistributedService {
                 if (responseEntity.getStatusCode().is2xxSuccessful()) {
                     return responseEntity.getBody();
                 }
-            }catch (HttpServerErrorException.ServiceUnavailable e) {
+            } catch (HttpServerErrorException.ServiceUnavailable e) {
                 log.error("LIST request is failed in " + node.getName(), e);
             } catch (ResourceAccessException e) {
                 log.error("Node " + node.getName() + " is unavailable.", e);

@@ -40,7 +40,7 @@ public class DocumentController {
     Document getDocument(@PathVariable String idCollection,
                          @PathVariable String idDoc,
                          @RequestHeader(name = "replica", required = false, defaultValue = "false")
-                                 boolean flagReplica) throws ClassNotFoundException {
+                                 boolean flagReplica){
         if (distributedService.isMyGroup(idCollection)) {
             try {
                 Document document = documentService.get(idCollection, idDoc);
