@@ -15,6 +15,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.client.RestTemplate;
@@ -49,17 +50,14 @@ public class DistributedService {
                 ResponseEntity responseEntity = restTemplate
                         .exchange(getURI(node.getHost(), parameters), HttpMethod.GET,
                                 new HttpEntity<>(getHeadersForReplica()), nameClass);
-                if (responseEntity.getStatusCode().is2xxSuccessful()) {
-                    log.info("Response is received from " + node.getHost());
-                    return responseEntity.getBody();
-                }
-                if (responseEntity.getStatusCode().is4xxClientError()) {
-                    throw new ResourceNotFoundException(responseEntity.getStatusCode().getReasonPhrase());
-                }
+                log.info("Response is received from " + node.getHost());
+                return responseEntity.getBody();
             } catch (ResourceAccessException e) {
                 log.error("Node " + node.getName() + " is unavailable.", e);
             } catch (HttpServerErrorException.ServiceUnavailable e) {
                 throw new FailedOperationException();
+            } catch (HttpClientErrorException e) {
+                throw new ResourceNotFoundException(e.getStatusText());
             }
         }
         throw new FailedOperationException();
@@ -75,17 +73,14 @@ public class DistributedService {
                         (getURI(node.getHost(), ids),
                                 HttpMethod.GET,
                                 new HttpEntity<>(getHeaders()), nameClass);
-                if (response.getStatusCode().is2xxSuccessful()) {
-                    log.info("Response is received from " + node.getHost());
-                    return response.getBody();
-                }
-                if (response.getStatusCode().is4xxClientError()) {
-                    throw new ResourceNotFoundException(response.getStatusCode().getReasonPhrase());
-                }
+                log.info("Response is received from " + node.getHost());
+                return response.getBody();
             } catch (ResourceAccessException e) {
                 log.error("Node " + node.getName() + " is unavailable.", e);
             } catch (HttpServerErrorException.ServiceUnavailable e) {
                 throw new FailedOperationException();
+            } catch (HttpClientErrorException e) {
+                throw new ResourceNotFoundException(e.getStatusText());
             }
         }
         throw new FailedOperationException();
@@ -93,23 +88,11 @@ public class DistributedService {
 
     //POST send and redirect
 
-    public void sendPostObject(Object object, int counter, boolean flagRollback, String idCollection) {
+    public void sendPostObject(Object object, Integer counter, boolean flagRollback, String idCollection) {
         List<Node> list = listGroups.get(defineIdGroup(idCollection));
-        Node nodeToSend;
-        if (!flagRollback) {
-            counter++;
-            if (counter == list.size()) {
-                log.info("Objects are successfully created on all replicas");
-                return;
-            }
-            nodeToSend = list.get(defineNextNode(list));
-        } else {
-            if (counter == 0) {
-                log.info("Rollbacks are successfully made on all necessary replicas");
-                throw new FailedOperationException();
-            }
-            counter--;
-            nodeToSend = list.get(definePreviousNode(list));
+        Node nodeToSend = getNodeToSend(counter, flagRollback, list);
+        if (nodeToSend == null) {
+            return;
         }
         try {
             log.info((flagRollback ? "Send rollback POST to " : "Send POST request to next node (")
@@ -127,47 +110,33 @@ public class DistributedService {
 
     public ResponseEntity redirectPost(Object object, String idCollection) {
         Node nodeFirstInGroup = listGroups.get(defineIdGroup(idCollection)).get(0);
+        ResponseEntity<Object> responseEntity = null;
         try {
             log.info("Redirect POST request to node(" + nodeFirstInGroup.getName() + ") of "
                     + nodeFirstInGroup.getIdGroup() + " group");
-            ResponseEntity<Object> responseEntity = restTemplate.postForEntity
+            responseEntity = restTemplate.postForEntity
                     (getURI(object, nodeFirstInGroup.getHost(), idCollection), getHttpEntity(object, getHeaders()),
                             Object.class);
-            if (responseEntity.getStatusCode().is4xxClientError()) {
-                checkTypeOfException(responseEntity.getStatusCode().getReasonPhrase());
-            }
-            return responseEntity;
         } catch (ResourceAccessException e) {
             log.error("Node " + nodeFirstInGroup.getName() + " is unavailable", e);
             throw new FailedOperationException();
+        } catch (HttpClientErrorException e) {
+            e.getCause();
         }
+        return responseEntity;
     }
 
     //UPDATE send and redirect
 
-    public void sendUpdateObject(Object object, int counter, boolean flagRollback, String... parameters) {
+    public void sendUpdateObject(Object object, Integer counter, boolean flagRollback, String... parameters) {
         List<Node> list = listGroups.get(Configuration.getCurrentNode().getIdGroup());
-        Node nodeToSend;
-        if (!flagRollback) {
-            counter++;
-            if (counter == list.size()) {
-                log.info("Changes are successfully made on all replicas");
-                return;
-            }
-            nodeToSend = list.get(defineNextNode(list));
-        } else {
-            if (counter == 0) {
-                log.info("Rollbacks are successfully made on all necessary replicas");
-                return;
-            }
-            counter--;
-            nodeToSend = list.get(definePreviousNode(list));
+        Node nodeToSend = getNodeToSend(counter, flagRollback, list);
+        if (nodeToSend == null) {
+            return;
         }
         try {
             log.info((flagRollback ? "Send rollback PUT to " : "Send PUT request to next node (")
                     + nodeToSend.getName() + ") in group " + nodeToSend.getIdGroup());
-//            restTemplate.exchange(getURI(nodeToSend.getHost(), parameters),
-//                    HttpMethod.PUT, new HttpEntity<>(object, getHeaders(counter, flagRollback)), Object.class);
             restTemplate.put(getURI(nodeToSend.getHost(), parameters),
                     getHttpEntity(object, getHeaders(counter, flagRollback)));
         } catch (HttpServerErrorException.ServiceUnavailable e) {
@@ -183,36 +152,23 @@ public class DistributedService {
         try {
             log.info("Redirect PUT request to node(" + nodeFirstInGroup.getName() + ") of "
                     + nodeFirstInGroup.getIdGroup() + " group");
-            ResponseEntity<Object> responseEntity = restTemplate.exchange(getURI(nodeFirstInGroup.getHost(), ids),
+            restTemplate.exchange(getURI(nodeFirstInGroup.getHost(), ids),
                     HttpMethod.PUT, getHttpEntity(object, getHeaders()), Object.class);
-            if (responseEntity.getStatusCode().is4xxClientError()) {
-                checkTypeOfException(responseEntity.getStatusCode().getReasonPhrase());
-            }
         } catch (ResourceAccessException e) {
             log.error("Node " + nodeFirstInGroup.getName() + " is unavailable.", e);
             throw new FailedOperationException();
+        } catch (HttpClientErrorException e) {
+            checkTypeOfException(e.getStatusText());
         }
     }
 
     //DELETE send and redirect
 
-    public void sendDeleteObject(int counter, boolean flagRollback, String... parameters) {
+    public void sendDeleteObject(Integer counter, boolean flagRollback, String... parameters) {
         List<Node> list = listGroups.get(Configuration.getCurrentNode().getIdGroup());
-        Node nodeToSend;
-        if (!flagRollback) {
-            counter++;
-            if (counter == list.size()) {
-                log.info("Objects are successfully deleted on all replicas");
-                return;
-            }
-            nodeToSend = list.get(defineNextNode(list));
-        } else {
-            if (counter == 0) {
-                log.info("Rollbacks are successfully made on all necessary replicas");
-                return;
-            }
-            counter--;
-            nodeToSend = list.get(definePreviousNode(list));
+        Node nodeToSend = getNodeToSend(counter, flagRollback, list);
+        if (nodeToSend == null) {
+            return;
         }
         try {
             log.info((flagRollback ? "Send rollback for CREATE request to " : "Send DELETE request to next node (")
@@ -225,7 +181,6 @@ public class DistributedService {
             log.error("Node " + nodeToSend.getName() + " is unavailable.", e);
             throw new FailedOperationException();
         }
-
     }
 
     public void redirectDelete(String... ids) {
@@ -233,16 +188,15 @@ public class DistributedService {
         try {
             log.info("Redirect DELETE request to node(" + nodeFirstInGroup.getName() + ") of "
                     + nodeFirstInGroup.getIdGroup() + " group");
-            ResponseEntity<Object> responseEntity = restTemplate.exchange(
+            restTemplate.exchange(
                     getURI(nodeFirstInGroup.getHost(), ids),
                     HttpMethod.DELETE,
                     new HttpEntity<>(getHeaders()), Object.class);
-            if (responseEntity.getStatusCode().is4xxClientError()) {
-                checkTypeOfException(responseEntity.getStatusCode().getReasonPhrase());
-            }
         } catch (ResourceAccessException e) {
             log.error("Node " + nodeFirstInGroup.getName() + " is unavailable.", e);
             throw new FailedOperationException();
+        } catch (HttpClientErrorException e) {
+            checkTypeOfException(e.getStatusText());
         }
     }
 
@@ -344,6 +298,23 @@ public class DistributedService {
         throw new FailedOperationException();
     }
 
+    private Node getNodeToSend(Integer counter, boolean flagRollback, List<Node> list) {
+        if (!flagRollback) {
+            counter++;
+            if (counter == list.size()) {
+                log.info("Objects are successfully created on all replicas");
+                return null;
+            }
+            return list.get(defineNextNode(list));
+        } else {
+            if (counter == 0) {
+                log.info("Rollbacks are successfully made on all necessary replicas");
+                return null;
+            }
+            counter--;
+            return list.get(definePreviousNode(list));
+        }
+    }
 
     private Map<String, String> getParamsForRequest(String objectToCompare, int size) {
         return Map.of("compare", objectToCompare, "size", String.valueOf(size));
