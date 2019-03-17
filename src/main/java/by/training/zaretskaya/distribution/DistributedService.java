@@ -57,7 +57,7 @@ public class DistributedService {
             } catch (HttpServerErrorException.ServiceUnavailable e) {
                 throw new FailedOperationException();
             } catch (HttpClientErrorException e) {
-                throw new ResourceNotFoundException(e.getStatusText());
+                e.getCause();
             }
         }
         throw new FailedOperationException();
@@ -80,7 +80,7 @@ public class DistributedService {
             } catch (HttpServerErrorException.ServiceUnavailable e) {
                 throw new FailedOperationException();
             } catch (HttpClientErrorException e) {
-                throw new ResourceNotFoundException(e.getStatusText());
+                e.getCause();
             }
         }
         throw new FailedOperationException();
@@ -158,7 +158,7 @@ public class DistributedService {
             log.error("Node " + nodeFirstInGroup.getName() + " is unavailable.", e);
             throw new FailedOperationException();
         } catch (HttpClientErrorException e) {
-            checkTypeOfException(e.getStatusText());
+            e.getCause();
         }
     }
 
@@ -196,7 +196,7 @@ public class DistributedService {
             log.error("Node " + nodeFirstInGroup.getName() + " is unavailable.", e);
             throw new FailedOperationException();
         } catch (HttpClientErrorException e) {
-            checkTypeOfException(e.getStatusText());
+            e.getCause();
         }
     }
 
@@ -415,24 +415,5 @@ public class DistributedService {
             return constructURI(host);
         }
         return constructURIForDocument(host, idCollection);
-    }
-
-    private void checkTypeOfException(String message) {
-        if (message.contains("with id ") && message.endsWith("is not found.")) {
-            throw new ResourceNotFoundException(message);
-        }
-        if (message.contains("with id ") && message.endsWith("is already exist.")) {
-            throw new ResourceIsExistException(message);
-        }
-        if (message.equals(Constants.COLLECTION_NAME_NOT_SUPPORTED)) {
-            throw new CollectionNameNotSupportedException();
-        }
-        if (message.startsWith("Cache limit with") && message.endsWith("is impossible.") ||
-                message.startsWith("Format") && message.endsWith("for cache algorithm is incompatible.")) {
-            throw new CollectionWrongParameters(message);
-        }
-        if (message.equals(Constants.DOCUMENT_IS_INVALID_UNDER_THE_SCHEME)) {
-            throw new DocumentIsInvalidUnderTheScheme();
-        }
     }
 }
