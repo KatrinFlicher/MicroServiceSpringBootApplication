@@ -8,12 +8,13 @@ import by.training.zaretskaya.exception.ResourceNotFoundException;
 import by.training.zaretskaya.exception.SomethingWrongWithDataBaseException;
 import by.training.zaretskaya.interfaces.CollectionDAO;
 import by.training.zaretskaya.models.Collection;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 import javax.persistence.*;
 import javax.transaction.Transactional;
-import java.io.FileNotFoundException;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -22,6 +23,7 @@ import java.util.regex.Pattern;
 @Qualifier("CollectionDAO")
 @Transactional
 public class CollectionDaoImpl implements CollectionDAO<Collection> {
+    private static final Logger log = LogManager.getLogger(CollectionDaoImpl.class);
 
     @PersistenceUnit
     private EntityManagerFactory managerFactory;
@@ -33,6 +35,7 @@ public class CollectionDaoImpl implements CollectionDAO<Collection> {
         Pattern p = Pattern.compile(Constants.PATTERN_FOR_NAME_COLLECTION);
         Matcher m = p.matcher(nameTable);
         if (!m.matches()) {
+            log.error("SQL injection or collection name is not supported");
             throw new CollectionNameNotSupportedException();
         }
     }
@@ -46,6 +49,7 @@ public class CollectionDaoImpl implements CollectionDAO<Collection> {
                     .replace(SQLConstants.MOCK_NAME_COLLECTION, collection.getName());
             entityManager.createNativeQuery(sqlQuery).executeUpdate();
         } catch (PersistenceException e) {
+            log.error("Problems with creating of collection in DB", e);
             throw new SomethingWrongWithDataBaseException(e);
         }
     }
@@ -55,10 +59,12 @@ public class CollectionDaoImpl implements CollectionDAO<Collection> {
         try {
             Collection collection = entityManager.find(Collection.class, name);
             if (collection == null) {
+                log.error("Resource is not found");
                 throw new ResourceNotFoundException(Constants.RESOURCE_COLLECTION, name);
             }
             return collection;
         } catch (PersistenceException e) {
+            log.error("Problems with getting collection from DB", e);
             throw new SomethingWrongWithDataBaseException(e);
         }
     }
@@ -73,6 +79,7 @@ public class CollectionDaoImpl implements CollectionDAO<Collection> {
                     .replace(SQLConstants.MOCK_NAME_COLLECTION, name);
             entityManager.createNativeQuery(sqlQuery).executeUpdate();
         } catch (PersistenceException e) {
+            log.error("Problems with deletion of collection in DB", e);
             throw new SomethingWrongWithDataBaseException(e);
         }
     }
@@ -85,6 +92,7 @@ public class CollectionDaoImpl implements CollectionDAO<Collection> {
             collectionFromDB.setAlgorithm(collection.getAlgorithm());
             entityManager.persist(collectionFromDB);
         } catch (PersistenceException e) {
+            log.error("Problems with updating collection in DB", e);
             throw new SomethingWrongWithDataBaseException(e);
         }
     }
@@ -99,17 +107,17 @@ public class CollectionDaoImpl implements CollectionDAO<Collection> {
             query.setMaxResults(size);
             return query.getResultList();
         } catch (PersistenceException e) {
+            log.error("Problems with getting list of collections from DB", e);
             throw new SomethingWrongWithDataBaseException(e);
         }
     }
 
     @Override
     public boolean consist(String name) {
-        try{
+        try {
             getById(name);
             return true;
-        }
-        catch (ResourceNotFoundException e){
+        } catch (ResourceNotFoundException e) {
             return false;
         }
     }

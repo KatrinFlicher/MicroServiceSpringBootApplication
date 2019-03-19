@@ -16,6 +16,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
@@ -40,7 +41,7 @@ public class DocumentController {
     Document getDocument(@PathVariable String idCollection,
                          @PathVariable String idDoc,
                          @RequestHeader(name = "replica", required = false, defaultValue = "false")
-                                 boolean flagReplica){
+                                 boolean flagReplica) throws Throwable {
         if (distributedService.isMyGroup(idCollection)) {
             try {
                 Document document = documentService.get(idCollection, idDoc);
@@ -77,8 +78,8 @@ public class DocumentController {
                         .buildAndExpand(document.getKey())
                         .toUri();
                 return ResponseEntity.created(location).build();
-            } catch (SomethingWrongWithDataBaseException | FailedOperationException e) {
-                if (e instanceof FailedOperationException) {
+            } catch (SomethingWrongWithDataBaseException | ResourceAccessException e) {
+                if (e instanceof ResourceAccessException) {
                     log.warn("Starting rollback for POST request in current node");
                     documentService.delete(idCollection, document.getKey());
                 } else {
@@ -106,12 +107,12 @@ public class DocumentController {
                 documentService.update(idCollection, idDoc, document);
                 log.info("Method PUT is successfully executed in " + Configuration.getCurrentNode().getName());
                 distributedService.sendUpdateObject(document, counter, flagRollback, idCollection, idDoc);
-            } catch (SomethingWrongWithDataBaseException | FailedOperationException e) {
+            } catch (SomethingWrongWithDataBaseException | ResourceAccessException e) {
                 if (flagRollback) {
                     log.fatal("Problem with rollback. The application doesn't work correctly", e);
                     throw new FailedOperationException();
                 }
-                if (e instanceof FailedOperationException) {
+                if (e instanceof ResourceAccessException) {
                     log.warn("Starting rollback for PUT request in current node");
                     documentService.update(idCollection, idDoc, documentOldValue);
                 } else {
@@ -138,12 +139,12 @@ public class DocumentController {
                 documentService.delete(idCollection, idDoc);
                 log.info("Method DELETE is successfully executed");
                 distributedService.sendDeleteObject(counter, flagRollback, idCollection);
-            } catch (SomethingWrongWithDataBaseException | FailedOperationException e) {
+            } catch (SomethingWrongWithDataBaseException | ResourceAccessException e) {
                 if (flagRollback) {
                     log.fatal("Problem with rollback. The application doesn't work correctly", e);
                     throw new FailedOperationException();
                 }
-                if (e instanceof FailedOperationException) {
+                if (e instanceof ResourceAccessException) {
                     log.warn("Starting rollback for DELETE request in current node");
                     documentService.create(idCollection, documentOldValue);
                 } else {

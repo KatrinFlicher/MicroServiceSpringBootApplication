@@ -3,17 +3,17 @@ package by.training.zaretskaya.distribution;
 import by.training.zaretskaya.config.Configuration;
 import by.training.zaretskaya.config.Node;
 import by.training.zaretskaya.constants.Constants;
-import by.training.zaretskaya.exception.*;
+import by.training.zaretskaya.exception.BadRequestException;
+import by.training.zaretskaya.exception.FailedOperationException;
+import by.training.zaretskaya.exception.ResourceNotFoundException;
 import by.training.zaretskaya.models.Collection;
 import by.training.zaretskaya.models.Document;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpServerErrorException;
@@ -57,13 +57,15 @@ public class DistributedService {
             } catch (HttpServerErrorException.ServiceUnavailable e) {
                 throw new FailedOperationException();
             } catch (HttpClientErrorException e) {
-                e.getCause();
+                log.error("ClientError is received from " + node.getName(), e);
+                throw new ResourceNotFoundException(new JSONObject(e.getResponseBodyAsString())
+                        .getString("message"));
             }
         }
         throw new FailedOperationException();
     }
 
-    public Object redirectGet(Class nameClass, String... ids) {
+    public Object redirectGet(Class nameClass, String... ids){
         int idGroup = defineIdGroup(ids[Constants.POSITION_ID_COLLECTION]);
         log.info("Redirect GET request to " + idGroup + " group");
         List<Node> list = listGroups.get(idGroup);
@@ -80,7 +82,9 @@ public class DistributedService {
             } catch (HttpServerErrorException.ServiceUnavailable e) {
                 throw new FailedOperationException();
             } catch (HttpClientErrorException e) {
-                e.getCause();
+                log.error("ClientError is received from " + node.getName(), e);
+                JSONObject json = new JSONObject(e.getResponseBodyAsString());
+                throw new ResourceNotFoundException(json.getString("message"));
             }
         }
         throw new FailedOperationException();
@@ -88,12 +92,13 @@ public class DistributedService {
 
     //POST send and redirect
 
-    public void sendPostObject(Object object, Integer counter, boolean flagRollback, String idCollection) {
+    public void sendPostObject(Object object, int counter, boolean flagRollback, String idCollection) {
         List<Node> list = listGroups.get(defineIdGroup(idCollection));
         Node nodeToSend = getNodeToSend(counter, flagRollback, list);
         if (nodeToSend == null) {
             return;
         }
+        counter = flagRollback ? counter - 1 : counter + 1;
         try {
             log.info((flagRollback ? "Send rollback POST to " : "Send POST request to next node (")
                     + nodeToSend.getName() + ") in group " + nodeToSend.getIdGroup());
@@ -104,7 +109,7 @@ public class DistributedService {
             throw new FailedOperationException();
         } catch (ResourceAccessException e) {
             log.error("Node " + nodeToSend.getName() + " is unavailable.", e);
-            throw new FailedOperationException();
+            throw e;
         }
     }
 
@@ -121,19 +126,23 @@ public class DistributedService {
             log.error("Node " + nodeFirstInGroup.getName() + " is unavailable", e);
             throw new FailedOperationException();
         } catch (HttpClientErrorException e) {
-            e.getCause();
+            log.error("ClientError is received from " + nodeFirstInGroup.getName(), e);
+            throwClientException(e);
+        } catch (HttpServerErrorException.ServiceUnavailable e) {
+            throw new FailedOperationException();
         }
         return responseEntity;
     }
 
     //UPDATE send and redirect
 
-    public void sendUpdateObject(Object object, Integer counter, boolean flagRollback, String... parameters) {
+    public void sendUpdateObject(Object object, int counter, boolean flagRollback, String... parameters) {
         List<Node> list = listGroups.get(Configuration.getCurrentNode().getIdGroup());
         Node nodeToSend = getNodeToSend(counter, flagRollback, list);
         if (nodeToSend == null) {
             return;
         }
+        counter = flagRollback ? counter - 1 : counter + 1;
         try {
             log.info((flagRollback ? "Send rollback PUT to " : "Send PUT request to next node (")
                     + nodeToSend.getName() + ") in group " + nodeToSend.getIdGroup());
@@ -143,7 +152,7 @@ public class DistributedService {
             throw new FailedOperationException();
         } catch (ResourceAccessException e) {
             log.error("Node " + nodeToSend.getName() + " is unavailable.", e);
-            throw new FailedOperationException();
+            throw e;
         }
     }
 
@@ -158,18 +167,22 @@ public class DistributedService {
             log.error("Node " + nodeFirstInGroup.getName() + " is unavailable.", e);
             throw new FailedOperationException();
         } catch (HttpClientErrorException e) {
-            e.getCause();
+            log.error("ClientError is received from " + nodeFirstInGroup.getName(), e);
+            throwClientException(e);
+        } catch (HttpServerErrorException.ServiceUnavailable e) {
+            throw new FailedOperationException();
         }
     }
 
     //DELETE send and redirect
 
-    public void sendDeleteObject(Integer counter, boolean flagRollback, String... parameters) {
+    public void sendDeleteObject(int counter, boolean flagRollback, String... parameters) {
         List<Node> list = listGroups.get(Configuration.getCurrentNode().getIdGroup());
         Node nodeToSend = getNodeToSend(counter, flagRollback, list);
         if (nodeToSend == null) {
             return;
         }
+        counter = flagRollback ? counter - 1 : counter + 1;
         try {
             log.info((flagRollback ? "Send rollback for CREATE request to " : "Send DELETE request to next node (")
                     + nodeToSend.getName() + ") in group " + nodeToSend.getIdGroup());
@@ -179,7 +192,7 @@ public class DistributedService {
             throw new FailedOperationException();
         } catch (ResourceAccessException e) {
             log.error("Node " + nodeToSend.getName() + " is unavailable.", e);
-            throw new FailedOperationException();
+            throw e;
         }
     }
 
@@ -196,7 +209,10 @@ public class DistributedService {
             log.error("Node " + nodeFirstInGroup.getName() + " is unavailable.", e);
             throw new FailedOperationException();
         } catch (HttpClientErrorException e) {
-            e.getCause();
+            log.error("ClientError is received from " + nodeFirstInGroup.getName(), e);
+            throwClientException(e);
+        } catch (HttpServerErrorException.ServiceUnavailable e) {
+            throw new FailedOperationException();
         }
     }
 
@@ -293,15 +309,19 @@ public class DistributedService {
                 log.error("LIST request is failed in " + node.getName(), e);
             } catch (ResourceAccessException e) {
                 log.error("Node " + node.getName() + " is unavailable.", e);
+            } catch (HttpClientErrorException e) {
+                log.error("ClientError is received from " + node.getName(), e);
+                throw new ResourceNotFoundException(new JSONObject(e.getResponseBodyAsString())
+                        .getString("message"));
             }
         }
         throw new FailedOperationException();
     }
 
-    private Node getNodeToSend(Integer counter, boolean flagRollback, List<Node> list) {
+    private Node getNodeToSend(int counter, boolean flagRollback, List<Node> list) {
         if (!flagRollback) {
             counter++;
-            if (counter == list.size()) {
+            if (list.size() == counter) {
                 log.info("Objects are successfully created on all replicas");
                 return null;
             }
@@ -357,6 +377,7 @@ public class DistributedService {
     }
 
     private HttpHeaders getHeaders(int counter, boolean rollback) {
+        System.out.println("from head" + counter);
         HttpHeaders headers = getHeaders(counter);
         headers.add("rollback", String.valueOf(rollback));
         return headers;
@@ -415,5 +436,15 @@ public class DistributedService {
             return constructURI(host);
         }
         return constructURIForDocument(host, idCollection);
+    }
+
+    private void throwClientException(HttpClientErrorException e) {
+        JSONObject json = new JSONObject(e.getResponseBodyAsString());
+        if (e.getStatusCode() == HttpStatus.BAD_REQUEST) {
+            throw new BadRequestException(json.getString("message"));
+        }
+        if (e.getStatusCode() == HttpStatus.NOT_FOUND) {
+            throw new ResourceNotFoundException(json.getString("message"));
+        }
     }
 }
