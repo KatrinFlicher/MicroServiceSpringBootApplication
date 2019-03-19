@@ -52,10 +52,8 @@ public class DistributedService {
                                 new HttpEntity<>(getHeadersForReplica()), nameClass);
                 log.info("Response is received from " + node.getHost());
                 return responseEntity.getBody();
-            } catch (ResourceAccessException e) {
+            } catch (ResourceAccessException | HttpServerErrorException.ServiceUnavailable e) {
                 log.error("Node " + node.getName() + " is unavailable.", e);
-            } catch (HttpServerErrorException.ServiceUnavailable e) {
-                throw new FailedOperationException();
             } catch (HttpClientErrorException e) {
                 log.error("ClientError is received from " + node.getName(), e);
                 throw new ResourceNotFoundException(new JSONObject(e.getResponseBodyAsString())
@@ -77,10 +75,8 @@ public class DistributedService {
                                 new HttpEntity<>(getHeaders()), nameClass);
                 log.info("Response is received from " + node.getHost());
                 return response.getBody();
-            } catch (ResourceAccessException e) {
+            } catch (ResourceAccessException | HttpServerErrorException.ServiceUnavailable e) {
                 log.error("Node " + node.getName() + " is unavailable.", e);
-            } catch (HttpServerErrorException.ServiceUnavailable e) {
-                throw new FailedOperationException();
             } catch (HttpClientErrorException e) {
                 log.error("ClientError is received from " + node.getName(), e);
                 JSONObject json = new JSONObject(e.getResponseBodyAsString());
@@ -295,18 +291,16 @@ public class DistributedService {
         for (Node node : list) {
             try {
                 log.info("Redirect LIST request to " + node.getName() + " in group " + node.getIdGroup());
-                ResponseEntity<List<Document>> responseEntity = restTemplate.exchange(
+                return restTemplate.exchange(
                         constructURIForDocument(node.getHost(), idCollection),
                         HttpMethod.GET,
                         new HttpEntity<>(getHeaders()),
                         new ParameterizedTypeReference<List<Document>>() {
                         },
-                        getParamsForRequest(objectToCompare, size));
-                if (responseEntity.getStatusCode().is2xxSuccessful()) {
-                    return responseEntity.getBody();
-                }
+                        getParamsForRequest(objectToCompare, size)).getBody();
             } catch (HttpServerErrorException.ServiceUnavailable e) {
                 log.error("LIST request is failed in " + node.getName(), e);
+                break;
             } catch (ResourceAccessException e) {
                 log.error("Node " + node.getName() + " is unavailable.", e);
             } catch (HttpClientErrorException e) {
