@@ -72,12 +72,6 @@ public class DocumentController {
                 documentService.create(idCollection, document);
                 log.info("Method POST is successfully executed in " + Configuration.getCurrentNode().getName());
                 distributedService.sendPostObject(document, counter, flagRollback, idCollection);
-                URI location = ServletUriComponentsBuilder
-                        .fromCurrentRequest()
-                        .path("/{idDoc}")
-                        .buildAndExpand(document.getKey())
-                        .toUri();
-                return ResponseEntity.created(location).build();
             } catch (SomethingWrongWithDataBaseException | ResourceAccessException e) {
                 if (e instanceof ResourceAccessException) {
                     log.warn("Starting rollback for POST request in current node");
@@ -86,11 +80,16 @@ public class DocumentController {
                     log.error("Problem with Data Base in  " + Configuration.getCurrentNode().getName(), e);
                 }
                 rollbackService.rollback(counter, idCollection, document.getKey());
-                throw new FailedOperationException();
             }
         } else {
             return distributedService.redirectPost(document, idCollection);
         }
+        URI location = ServletUriComponentsBuilder
+                .fromCurrentRequest()
+                .path("/{idDoc}")
+                .buildAndExpand(document.getKey())
+                .toUri();
+        return ResponseEntity.created(location).build();
     }
 
     @PutMapping("/{idDoc}")
