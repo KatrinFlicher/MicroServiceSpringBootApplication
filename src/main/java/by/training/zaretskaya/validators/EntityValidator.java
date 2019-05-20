@@ -22,13 +22,15 @@ import org.springframework.stereotype.Component;
 @Component
 public class EntityValidator {
     private static final Logger log = LogManager.getLogger(EntityValidator.class);
-    @Autowired
-    @Qualifier("CollectionCachedDAO")
-    CollectionDAO<Collection> collectionDAO;
+    private CollectionDAO<Collection> collectionDAO;
+    private DocumentDAO<Document> documentDAO;
 
     @Autowired
-    @Qualifier("DocumentCachedDAO")
-    DocumentDAO<Document> documentDAO;
+    public EntityValidator(@Qualifier("CollectionCachedDAO") CollectionDAO<Collection> collectionDAO,
+                           @Qualifier("DocumentCachedDAO") DocumentDAO<Document> documentDAO){
+        this.collectionDAO = collectionDAO;
+        this.documentDAO = documentDAO;
+    }
 
 
     public void checkNewNameForTable(String newName) {
@@ -44,7 +46,7 @@ public class EntityValidator {
             throw new CollectionWrongParameters(Constants.NEGATIVE_CACHE_LIMIT, String.valueOf(collection.getCacheLimit()));
         }
         try {
-            FactoryCache.TypeCache.valueOf(collection.getAlgorithm());
+            FactoryCache.TypeCache.valueOf(collection.getAlgorithm().toUpperCase());
         } catch (IllegalArgumentException e) {
             log.error("Request with wrong value for cache algorithm", e);
             throw new CollectionWrongParameters(Constants.INCOMPATIBLE_FORMAT_CACHE_ALGORITHM, collection.getAlgorithm());

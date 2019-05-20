@@ -5,7 +5,6 @@ import by.training.zaretskaya.models.Document;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
-import org.skyscreamer.jsonassert.JSONAssert;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -20,18 +19,15 @@ import org.springframework.test.web.servlet.RequestBuilder;
 import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
-import java.util.Arrays;
-import java.util.List;
-
 import static org.junit.Assert.assertEquals;
 
 @RunWith(SpringRunner.class)
 @WebMvcTest(value = DocumentController.class, secure = false)
 public class DocumentControllerTest {
 
-    Document mockDocument = new Document("Popova", "Intern 2 cat");
-    String exampleDocumentJson = "{\"key\": \"Popova\",\"value\":\"Intern 2 cat\"}";
-    String expectedValue = "Intern 2 cat";
+    private Document mockDocument = new Document("Popova", "Intern 2 cat");
+    private String exampleDocumentJson = "{\"key\": \"Popova\",\"value\":\"Intern 2 cat\"}";
+    private String expectedValue = "Intern 2 cat";
     @Autowired
     private MockMvc mockMvc;
     @MockBean

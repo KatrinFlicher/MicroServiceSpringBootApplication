@@ -22,7 +22,7 @@ public class Constants {
 
     public static final int POSITION_ID_COLLECTION = 0;
     public static final int POSITION_ID_DOCUMENT = 1;
-    public static final String NAME_APPLICATION = "/rest/";
+    public static final String NAME_APPLICATION = "/rest";
     public static final String DOCUMENTS = "/docs/";
 
 

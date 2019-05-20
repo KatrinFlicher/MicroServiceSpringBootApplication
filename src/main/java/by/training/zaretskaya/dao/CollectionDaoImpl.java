@@ -11,6 +11,7 @@ import by.training.zaretskaya.models.Collection;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Component;
 
 import javax.persistence.*;
@@ -20,13 +21,14 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Component
+@DependsOn("dataSource")
 @Qualifier("CollectionDAO")
 @Transactional
 public class CollectionDaoImpl implements CollectionDAO<Collection> {
     private static final Logger log = LogManager.getLogger(CollectionDaoImpl.class);
 
-    @PersistenceUnit
-    private EntityManagerFactory managerFactory;
+//    @PersistenceUnit
+//    private EntityManagerFactory managerFactory;
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -73,8 +75,7 @@ public class CollectionDaoImpl implements CollectionDAO<Collection> {
     public void delete(String name) {
         try {
             checkNameTable(name);
-            Collection collection = getById(name);
-            entityManager.remove(collection);
+            entityManager.remove(getById(name));
             String sqlQuery = SQLConstants.DROP_NAMED_DOCUMENT_TABLE
                     .replace(SQLConstants.MOCK_NAME_COLLECTION, name);
             entityManager.createNativeQuery(sqlQuery).executeUpdate();

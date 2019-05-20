@@ -12,14 +12,18 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 @Service
+@Qualifier("CollectionService")
 public class CollectionServiceImpl implements ICollectionService<Collection> {
 
-    @Autowired
-    @Qualifier("CollectionCachedDAO")
-    CollectionDAO<Collection> collectionDAO;
+    private CollectionDAO<Collection> collectionDAO;
+    private EntityValidator validator;
 
     @Autowired
-    EntityValidator validator;
+    public CollectionServiceImpl(@Qualifier("CollectionCachedDAO") CollectionDAO<Collection> collectionDAO,
+                                 EntityValidator validator) {
+        this.collectionDAO = collectionDAO;
+        this.validator = validator;
+    }
 
     @Override
     public void create(Collection collection) {

@@ -33,6 +33,10 @@ public class Collection implements Cloneable {
         this.jsonScheme = jsonScheme;
     }
 
+    public Collection(Collection collection){
+        this(collection.getName(), collection.getCacheLimit(), collection.getAlgorithm(), collection.jsonScheme);
+    }
+
     public Collection() {
     }
 

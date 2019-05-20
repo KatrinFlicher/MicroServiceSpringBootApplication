@@ -2,7 +2,6 @@ package by.training.zaretskaya.dao;
 
 import by.training.zaretskaya.constants.Constants;
 import by.training.zaretskaya.impl.FactoryCache;
-import by.training.zaretskaya.impl.LFUCacheImpl;
 import by.training.zaretskaya.interfaces.CollectionDAO;
 import by.training.zaretskaya.interfaces.ICache;
 import by.training.zaretskaya.models.Collection;
@@ -17,16 +16,21 @@ import java.util.List;
 @Qualifier("CollectionCachedDAO")
 public class CollectionCachedDAOImpl implements CollectionDAO<Collection> {
 
+    private CollectionDAO<Collection> collectionDao;
+    private ICache<String, Collection> mapCollection;
+
     @Autowired
-    @Qualifier("CollectionDAO")
-    CollectionDAO<Collection> collectionDao;
-    private ICache<String, Collection> mapCollection = new LFUCacheImpl(Constants.MAX_SIZE_FOR_CACHE_COLLECTIONS);
+    public CollectionCachedDAOImpl(@Qualifier("CollectionDAO") CollectionDAO<Collection> collectionDao,
+                                   ICache<String, Collection> mapCollection) {
+        this.collectionDao = collectionDao;
+        this.mapCollection = mapCollection;
+    }
 
     @PostConstruct
     void fillMap() {
         List<Collection> list = collectionDao.list(Constants.DEFAULT_OBJECT_TO_COMPARE,
                 Constants.MAX_SIZE_FOR_CACHE_COLLECTIONS);
-        list.stream().forEach((collection) -> {
+        list.forEach((collection) -> {
             collection.setCache(FactoryCache
                     .createCache(collection.getAlgorithm(), collection.getCacheLimit()));
             mapCollection.put(collection.getName(), collection);
@@ -57,10 +61,10 @@ public class CollectionCachedDAOImpl implements CollectionDAO<Collection> {
     public void update(String name, Collection collection) {
         collectionDao.update(name, collection);
         if (mapCollection.contains(name)) {
-            Collection collectionFromDB = mapCollection.get(name);
-            collectionFromDB.setCacheLimit(collection.getCacheLimit());
+            Collection collectionFromCache = mapCollection.get(name);
+            collectionFromCache.setCacheLimit(collection.getCacheLimit());
             collection.setAlgorithm(collection.getAlgorithm());
-            collectionFromDB.setCache(FactoryCache.createCache(collection.getAlgorithm(), collection.getCacheLimit()));
+            collectionFromCache.setCache(FactoryCache.createCache(collection.getAlgorithm(), collection.getCacheLimit()));
         }
     }
 
@@ -71,7 +75,7 @@ public class CollectionCachedDAOImpl implements CollectionDAO<Collection> {
 
     @Override
     public boolean consist(String name) {
-        if (!mapCollection.contains(name)){
+        if (!mapCollection.contains(name)) {
             return collectionDao.consist(name);
         }
         return true;

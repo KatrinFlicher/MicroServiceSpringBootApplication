@@ -1,88 +1,76 @@
 package by.training.zaretskaya.controllers;
 
 
-import by.training.zaretskaya.config.Configuration;
+import by.training.zaretskaya.config.Node;
 import by.training.zaretskaya.constants.Constants;
-import by.training.zaretskaya.distribution.DistributedService;
-import by.training.zaretskaya.distribution.RollbackService;
 import by.training.zaretskaya.exception.FailedOperationException;
 import by.training.zaretskaya.exception.SomethingWrongWithDataBaseException;
+import by.training.zaretskaya.interfaces.DistributedDocumentService;
 import by.training.zaretskaya.interfaces.IDocumentService;
 import by.training.zaretskaya.models.Document;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.client.ResourceAccessException;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.net.URI;
+import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/rest/{idCollection}/docs")
 public class DocumentController {
     private static final Logger log = LogManager.getLogger(DocumentController.class);
 
-    @Autowired
-    IDocumentService<Document> documentService;
+    private IDocumentService<Document> documentService;
+    private DistributedDocumentService<Document> distributedService;
+    private Node node;
 
     @Autowired
-    DistributedService distributedService;
-
-    @Autowired
-    RollbackService rollbackService;
+    public DocumentController(@Qualifier("DocumentService") IDocumentService<Document> documentService,
+                              DistributedDocumentService<Document> distributedService, Node node) {
+        this.documentService = documentService;
+        this.distributedService = distributedService;
+        this.node = node;
+    }
 
     @GetMapping("/{idDoc}")
     Document getDocument(@PathVariable String idCollection,
                          @PathVariable String idDoc,
                          @RequestHeader(name = "replica", required = false, defaultValue = "false")
-                                 boolean flagReplica) throws Throwable {
-        if (distributedService.isMyGroup(idCollection)) {
+                                 boolean flagReplica) {
+        if (distributedService.isMyGroup(idDoc)) {
             try {
-                Document document = documentService.get(idCollection, idDoc);
-                log.info("Method GET is successfully executed in " + Configuration.getCurrentNode().getName());
-                return document;
+                return documentService.get(idCollection, idDoc);
             } catch (SomethingWrongWithDataBaseException e) {
-                log.error("Problem with Data Base in " + Configuration.getCurrentNode().getName(), e);
+                log.error("Problem with Data Base in  " + node.getName(), e);
                 if (!flagReplica) {
-                    return (Document) distributedService.sendGetObject(Document.class, idCollection, idDoc);
-                } else {
-                    throw new FailedOperationException();
+                    return distributedService.get(idCollection, idDoc);
                 }
+                throw new FailedOperationException();
             }
         } else {
-            return (Document) distributedService.redirectGet(Document.class, idCollection, idDoc);
+            return distributedService.redirectQuery(HttpMethod.GET, null, idCollection, idDoc).getBody();
         }
     }
 
     @PostMapping
     public ResponseEntity createDocument(@PathVariable String idCollection,
                                          @RequestBody Document document,
-                                         @RequestHeader(name = "counter", required = false,
-                                                 defaultValue = "0") int counter,
-                                         @RequestHeader(name = "rollback", required = false,
-                                                 defaultValue = "false") boolean flagRollback) {
-        if (distributedService.isMyGroup(idCollection)) {
-            try {
-                documentService.create(idCollection, document);
-                log.info("Method POST is successfully executed in " + Configuration.getCurrentNode().getName());
-                distributedService.sendPostObject(document, counter, flagRollback, idCollection);
-            } catch (SomethingWrongWithDataBaseException | ResourceAccessException e) {
-                if (e instanceof ResourceAccessException) {
-                    log.warn("Starting rollback for POST request in current node");
-                    documentService.delete(idCollection, document.getKey());
-                } else {
-                    log.error("Problem with Data Base in  " + Configuration.getCurrentNode().getName(), e);
-                }
-                rollbackService.rollback(counter, idCollection, document.getKey());
+                                         @RequestHeader(name = "replica", required = false, defaultValue = "false")
+                                                 boolean flagReplica) {
+        if (distributedService.isMyGroup(document.getKey())) {
+            documentService.create(idCollection, document);
+            if (!flagReplica) {
+                distributedService.create(idCollection, document);
             }
         } else {
-            return distributedService.redirectPost(document, idCollection);
+            distributedService.redirectQuery(HttpMethod.POST, document, idCollection);
         }
         URI location = ServletUriComponentsBuilder
                 .fromCurrentRequest()
@@ -97,65 +85,33 @@ public class DocumentController {
     void updateDocument(@PathVariable String idCollection,
                         @PathVariable String idDoc,
                         @RequestBody Document document,
-                        @RequestHeader(name = "counter", required = false, defaultValue = "0") int counter,
-                        @RequestHeader(name = "rollback", required = false, defaultValue = "false") boolean flagRollback)
-            throws CloneNotSupportedException {
-        if (distributedService.isMyGroup(idCollection)) {
-            Document documentOldValue = documentService.get(idCollection, idDoc).clone();
-            try {
-                documentService.update(idCollection, idDoc, document);
-                log.info("Method PUT is successfully executed in " + Configuration.getCurrentNode().getName());
-                distributedService.sendUpdateObject(document, counter, flagRollback, idCollection, idDoc);
-            } catch (SomethingWrongWithDataBaseException | ResourceAccessException e) {
-                if (flagRollback) {
-                    log.fatal("Problem with rollback. The application doesn't work correctly", e);
-                    throw new FailedOperationException();
-                }
-                if (e instanceof ResourceAccessException) {
-                    log.warn("Starting rollback for PUT request in current node");
-                    documentService.update(idCollection, idDoc, documentOldValue);
-                } else {
-                    log.error("Problem with Data Base in  " + Configuration.getCurrentNode().getName(), e);
-                }
-                rollbackService.rollback(documentOldValue, counter, HttpMethod.PUT, idCollection, idDoc);
+                        @RequestHeader(name = "replica", required = false, defaultValue = "false")
+                                boolean flagReplica) {
+        if (distributedService.isMyGroup(idDoc)) {
+            documentService.update(idCollection, idDoc, document);
+            if (!flagReplica) {
+                distributedService.update(idCollection, idDoc, document);
             }
         } else {
-            distributedService.redirectPut(document, idCollection, idDoc);
+            distributedService.redirectQuery(HttpMethod.PUT, document, idCollection, idDoc);
         }
     }
-
 
     @DeleteMapping("/{idDoc}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     void deleteDocument(@PathVariable String idCollection,
                         @PathVariable String idDoc,
-                        @RequestHeader(name = "counter", required = false, defaultValue = "0") int counter,
-                        @RequestHeader(name = "rollback", required = false, defaultValue = "false")
-                                boolean flagRollback) throws CloneNotSupportedException {
-        if (distributedService.isMyGroup(idCollection)) {
-            Document documentOldValue = documentService.get(idCollection, idDoc).clone();
-            try {
-                documentService.delete(idCollection, idDoc);
-                log.info("Method DELETE is successfully executed");
-                distributedService.sendDeleteObject(counter, flagRollback, idCollection);
-            } catch (SomethingWrongWithDataBaseException | ResourceAccessException e) {
-                if (flagRollback) {
-                    log.fatal("Problem with rollback. The application doesn't work correctly", e);
-                    throw new FailedOperationException();
-                }
-                if (e instanceof ResourceAccessException) {
-                    log.warn("Starting rollback for DELETE request in current node");
-                    documentService.create(idCollection, documentOldValue);
-                } else {
-                    log.error("Problem with Data Base in  " + Configuration.getCurrentNode().getName(), e);
-                }
-                rollbackService.rollback(documentOldValue, counter, HttpMethod.DELETE, idCollection);
+                        @RequestHeader(name = "replica", required = false, defaultValue = "false")
+                                boolean flagReplica) {
+        if (distributedService.isMyGroup(idDoc)) {
+            documentService.delete(idCollection, idDoc);
+            if (!flagReplica) {
+                distributedService.delete(idCollection, idDoc);
             }
         } else {
-            distributedService.redirectDelete(idCollection, idDoc);
+            distributedService.redirectQuery(HttpMethod.DELETE, null, idCollection, idDoc);
         }
     }
-
 
     @GetMapping
     List<Document> listDocuments(@PathVariable String idCollection,
@@ -166,22 +122,22 @@ public class DocumentController {
                                  @RequestHeader(name = "replica", required = false,
                                          defaultValue = "false") boolean flagReplica) {
         List<Document> documents;
-        if (distributedService.isMyGroup(idCollection)) {
-            try {
-                documents = documentService.list(idCollection, compare, size);
-            } catch (SomethingWrongWithDataBaseException e) {
-                log.error("Problem with Data Base in  " + Configuration.getCurrentNode().getName(), e);
-                if (!flagReplica) {
-                    documents = distributedService.sendListToReplica(compare, size, idCollection)
-                            .stream().map((obj) -> (Document) obj).collect(Collectors.toList());
-                } else {
-                    throw new FailedOperationException();
-                }
+        try {
+            documents = documentService.list(idCollection, compare, size);
+        } catch (SomethingWrongWithDataBaseException e) {
+            log.error("Problem with Data Base in  " + node.getName(), e);
+            if (!flagReplica) {
+                return distributedService.listFromReplica(idCollection, compare, size);
+            } else {
+                throw new FailedOperationException();
             }
-        } else {
-            return distributedService.redirectListDocument(idCollection, compare, size);
         }
-        log.info("Method LIST Documents is successfully executed");
+        if (!flagReplica) {
+            documents.addAll(distributedService.list(idCollection, compare, size));
+            documents.sort(Comparator.comparing(Document::getKey));
+            log.info("Method LIST is successfully executed");
+            return documents.subList(0, size);
+        }
         return documents;
     }
 }

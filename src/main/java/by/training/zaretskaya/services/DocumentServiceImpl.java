@@ -11,14 +11,18 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 @Service
+@Qualifier("DocumentService")
 public class DocumentServiceImpl implements IDocumentService<Document> {
 
-    @Autowired
-    @Qualifier("DocumentCachedDAO")
-    DocumentDAO<Document> documentDAO;
+    private DocumentDAO<Document> documentDAO;
+    private EntityValidator validator;
 
     @Autowired
-    EntityValidator validator;
+    public DocumentServiceImpl(@Qualifier("DocumentCachedDAO") DocumentDAO<Document> documentDAO,
+                               EntityValidator validator) {
+        this.documentDAO = documentDAO;
+        this.validator = validator;
+    }
 
     @Override
     public void create(String nameCollection, Document document) {

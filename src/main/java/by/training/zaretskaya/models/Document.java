@@ -14,6 +14,11 @@ public class Document implements Cloneable{
         this.value = value;
     }
 
+    public Document(Document document){
+        this.key = document.getKey();
+        this.value = document.getValue();
+    }
+
     public String getKey() {
         return key;
     }

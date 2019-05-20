@@ -11,6 +11,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.dao.DataAccessException;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
@@ -24,13 +25,18 @@ import java.util.regex.Pattern;
 
 
 @Component
+@DependsOn("dataSource")
 @Qualifier("DocumentDao")
 @Transactional
 public class DocumentDaoImpl implements DocumentDAO<Document> {
     private static final Logger log = LogManager.getLogger(DocumentDaoImpl.class);
 
+    private JdbcTemplate jdbcTemplate;
+
     @Autowired
-    JdbcTemplate jdbcTemplate;
+    public DocumentDaoImpl(JdbcTemplate jdbcTemplate){
+        this.jdbcTemplate = jdbcTemplate;
+    }
 
     @Override
     public void create(String nameCollection, Document document) {
