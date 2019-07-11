@@ -46,10 +46,10 @@ public class EntityValidator {
             throw new CollectionWrongParameters(Constants.NEGATIVE_CACHE_LIMIT, String.valueOf(collection.getCacheLimit()));
         }
         try {
-            FactoryCache.TypeCache.valueOf(collection.getAlgorithm().toUpperCase());
+            FactoryCache.TypeCache.valueOf(collection.getCacheAlgorithm().toUpperCase());
         } catch (IllegalArgumentException e) {
-            log.error("Request with wrong value for cache algorithm", e);
-            throw new CollectionWrongParameters(Constants.INCOMPATIBLE_FORMAT_CACHE_ALGORITHM, collection.getAlgorithm());
+            log.error("Request with wrong value for cache cacheAlgorithm", e);
+            throw new CollectionWrongParameters(Constants.INCOMPATIBLE_FORMAT_CACHE_ALGORITHM, collection.getCacheAlgorithm());
         }
     }
 

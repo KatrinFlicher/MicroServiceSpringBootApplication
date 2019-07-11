@@ -31,7 +31,7 @@ public class CollectionCachedDAOImpl implements CollectionDAO<Collection> {
                 Constants.MAX_SIZE_FOR_CACHE_COLLECTIONS);
         list.forEach((collection) -> {
             collection.setCache(FactoryCache
-                    .createCache(collection.getAlgorithm(), collection.getCacheLimit()));
+                    .createCache(collection.getCacheAlgorithm(), collection.getCacheLimit()));
             mapCollection.put(collection.getName(), collection);
         });
     }
@@ -62,8 +62,8 @@ public class CollectionCachedDAOImpl implements CollectionDAO<Collection> {
         if (mapCollection.contains(name)) {
             Collection collectionFromCache = mapCollection.get(name);
             collectionFromCache.setCacheLimit(collection.getCacheLimit());
-            collection.setAlgorithm(collection.getAlgorithm());
-            collectionFromCache.setCache(FactoryCache.createCache(collection.getAlgorithm(), collection.getCacheLimit()));
+            collection.setCacheAlgorithm(collection.getCacheAlgorithm());
+            collectionFromCache.setCache(FactoryCache.createCache(collection.getCacheAlgorithm(), collection.getCacheLimit()));
         }
     }
 

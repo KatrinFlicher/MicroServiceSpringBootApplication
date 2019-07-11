@@ -61,7 +61,7 @@ public class CollectionCachedDAOImplTest {
         int newValueCacheLimit = 50;
         String newValueAlgorithm = "LRU";
         Collection collection = mockCollection.clone();
-        collection.setAlgorithm(newValueAlgorithm);
+        collection.setCacheAlgorithm(newValueAlgorithm);
         collection.setCacheLimit(newValueCacheLimit);
         collectionCachedDAO.create(mockCollection);
         collectionCachedDAO.update(mockCollection.getName(), collection);

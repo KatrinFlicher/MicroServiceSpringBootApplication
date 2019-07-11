@@ -42,7 +42,7 @@ public class DocumentCachedDAOImplTest {
     @Before
     public void tuneUpMockCollection() {
         mockCollection.setCache(FactoryCache
-                .createCache(mockCollection.getAlgorithm(), mockCollection.getCacheLimit()));
+                .createCache(mockCollection.getCacheAlgorithm(), mockCollection.getCacheLimit()));
         Mockito.when(collectionDAO.getById(Mockito.anyString())).thenReturn(mockCollection);
     }
 

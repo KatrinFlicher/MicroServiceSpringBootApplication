@@ -89,7 +89,7 @@ public class CollectionDaoImpl implements CollectionDAO<Collection> {
         try {
             Collection collectionFromDB = getById(name);
             collectionFromDB.setCacheLimit(collection.getCacheLimit());
-            collectionFromDB.setAlgorithm(collection.getAlgorithm());
+            collectionFromDB.setCacheAlgorithm(collection.getCacheAlgorithm());
             entityManager.persist(collectionFromDB);
         } catch (PersistenceException e) {
             log.error("Problems with updating collection in DB", e);

@@ -18,7 +18,7 @@ public class CollectionControllerTest {
     private String exampleCollectionJson = " {\n" +
             "        \"name\": \"cats\",\n" +
             "        \"cacheLimit\": 12,\n" +
-            "        \"algorithm\": \"LFU\"\n" +
+            "        \"cacheAlgorithm\": \"LFU\"\n" +
             "    }";
 
     String jo = "{\n" +
@@ -104,7 +104,7 @@ public class CollectionControllerTest {
 //
 //    @Test
 //    public void testUpdateCollectionAlgorithm() throws Exception {
-//        MvcResult result = prepareUpdate("algorithm");
+//        MvcResult result = prepareUpdate("cacheAlgorithm");
 //        Mockito.verify(collectionService)
 //                .updateAlgorithm(Mockito.anyString(), Mockito.anyString());
 //        assertEquals(HttpStatus.NO_CONTENT.value(), result.getResponse().getStatus());
