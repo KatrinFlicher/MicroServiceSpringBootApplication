@@ -1,40 +1,68 @@
 package by.training.zaretskaya.controllers;
 
+import by.training.zaretskaya.config.Node;
 import by.training.zaretskaya.models.Collection;
+import by.training.zaretskaya.services.DistributedCollectionService;
+import by.training.zaretskaya.services.ICollectionService;
+import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mockito;
+import org.skyscreamer.jsonassert.JSONAssert;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.web.servlet.RequestBuilder;
+import org.springframework.test.web.servlet.request.MockHttpServletRequestBuilder;
+import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+
+import java.util.Arrays;
+import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.when;
 
-
+//@RunWith(SpringRunner.class)
+//@WebMvcTest(value = CollectionController.class, secure = false)
 public class CollectionControllerTest {
 
-    private Collection mockCollection = new Collection("cats", 12, "LFU", "{\n" +
-            "  \"type\": \"string\",\n" +
-            "  \"minLength\": 2,\n" +
-            "  \"maxLength\": 3\n" +
-            "}");
-    private String exampleCollectionJson = " {\n" +
-            "        \"name\": \"cats\",\n" +
-            "        \"cacheLimit\": 12,\n" +
-            "        \"cacheAlgorithm\": \"LFU\"\n" +
-            "    }";
-
-    String jo = "{\n" +
-            "  \"type\": \"string\",\n" +
-            "  \"minLength\": 2,\n" +
-            "  \"maxLength\": 30\n" +
-            "}";
-
+//    private Collection mockCollection = new Collection("cats", 12, "LFU", "{\n" +
+//            "  \"type\": \"string\",\n" +
+//            "  \"minLength\": 2,\n" +
+//            "  \"maxLength\": 3\n" +
+//            "}");
+//    private String exampleCollectionJson = " {\n" +
+//            "        \"name\": \"cats\",\n" +
+//            "        \"cacheLimit\": 12,\n" +
+//            "        \"cacheAlgorithm\": \"LFU\"\n" +
+//            "        \"jsonScheme\": {\n" +
+//            "  \"type\": \"string\",\n" +
+//            "  \"minLength\": 2,\n" +
+//            "  \"maxLength\": 30\n} \n}";
+//
+//    String jo = "{\n" +
+//            "  \"type\": \"string\",\n" +
+//            "  \"minLength\": 2,\n" +
+//            "  \"maxLength\": 30\n" +
+//            "}";
+//
 //    @Autowired
 //    private MockMvc mockMvc;
 //    @MockBean
 //    private ICollectionService collectionService;
 //    @MockBean
-//    DistributedService distributedService;
+//    DistributedCollectionService distributedService;
 //    @MockBean
-//    RollbackService rollbackService;
+//    Node node;
+//
+//
+//
 //
 //    @Test
 //    public void testCreateCollection() throws Exception {
@@ -51,12 +79,12 @@ public class CollectionControllerTest {
 //        assertEquals("http://localhost/rest/cats",
 //                response.getHeader(HttpHeaders.LOCATION));
 //    }
-
+//
 //    @Test
 //    public void testListCollections() throws Exception {
 //        String expected = "[" + exampleCollectionJson + "," + exampleCollectionJson + "," + exampleCollectionJson + "]";
 //        List<Collection> collections = Arrays.asList(mockCollection, mockCollection, mockCollection);
-//        Mockito.when(collectionService
+//        when(collectionService
 //                .listCollections(Mockito.anyInt(), Mockito.anyInt()))
 //                .thenReturn(collections);
 //        RequestBuilder requestBuilder = MockMvcRequestBuilders
@@ -65,7 +93,7 @@ public class CollectionControllerTest {
 //        MvcResult result = mockMvc.perform(requestBuilder).andReturn();
 //        JSONAssert.assertEquals(expected, result.getResponse().getContentAsString(), false);
 //    }
-
+//
 //    @Test
 //    public void testGetCollectionById() throws Exception {
 //        when(
@@ -85,7 +113,7 @@ public class CollectionControllerTest {
 //        Mockito.verify(collectionService).delete(Mockito.anyString());
 //        assertEquals(HttpStatus.NO_CONTENT.value(), result.getResponse().getStatus());
 //    }
-
+//
 //    @Test
 //    public void testUpdateCollectionName() throws Exception {
 //        MvcResult result = prepareUpdate("name");
@@ -106,7 +134,7 @@ public class CollectionControllerTest {
 //    public void testUpdateCollectionAlgorithm() throws Exception {
 //        MvcResult result = prepareUpdate("cacheAlgorithm");
 //        Mockito.verify(collectionService)
-//                .updateAlgorithm(Mockito.anyString(), Mockito.anyString());
+//                .update(Mockito.anyString(), Mockito.anyString());
 //        assertEquals(HttpStatus.NO_CONTENT.value(), result.getResponse().getStatus());
 //    }
 //

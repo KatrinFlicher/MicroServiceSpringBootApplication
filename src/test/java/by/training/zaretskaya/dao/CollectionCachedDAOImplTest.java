@@ -57,10 +57,10 @@ public class CollectionCachedDAOImplTest {
     }
 
     @Test
-    public void testUpdateCollection() throws CloneNotSupportedException {
+    public void testUpdateCollection() {
         int newValueCacheLimit = 50;
         String newValueAlgorithm = "LRU";
-        Collection collection = mockCollection.clone();
+        Collection collection = new Collection(mockCollection);
         collection.setCacheAlgorithm(newValueAlgorithm);
         collection.setCacheLimit(newValueCacheLimit);
         collectionCachedDAO.create(mockCollection);
