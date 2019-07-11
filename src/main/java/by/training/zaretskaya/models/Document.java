@@ -1,8 +1,6 @@
 package by.training.zaretskaya.models;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
-public class Document implements Cloneable{
+public class Document implements Cloneable {
     private String key;
     private String value;
 
@@ -14,7 +12,7 @@ public class Document implements Cloneable{
         this.value = value;
     }
 
-    public Document(Document document){
+    public Document(Document document) {
         this.key = document.getKey();
         this.value = document.getValue();
     }

@@ -2,8 +2,8 @@ package by.training.zaretskaya.distribution;
 
 import by.training.zaretskaya.config.Node;
 import by.training.zaretskaya.exception.FailedOperationException;
-import by.training.zaretskaya.interfaces.DistributedCollectionService;
-import by.training.zaretskaya.interfaces.ICollectionService;
+import by.training.zaretskaya.services.DistributedCollectionService;
+import by.training.zaretskaya.services.ICollectionService;
 import by.training.zaretskaya.models.Collection;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

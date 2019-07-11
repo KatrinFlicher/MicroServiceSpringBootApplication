@@ -1,6 +1,6 @@
 package by.training.zaretskaya.services;
 
-import by.training.zaretskaya.interfaces.DocumentDAO;
+import by.training.zaretskaya.dao.DocumentDAO;
 import by.training.zaretskaya.models.Document;
 import by.training.zaretskaya.validators.EntityValidator;
 import org.junit.Test;

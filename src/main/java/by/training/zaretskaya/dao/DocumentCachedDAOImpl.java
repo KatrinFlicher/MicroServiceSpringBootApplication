@@ -1,8 +1,6 @@
 package by.training.zaretskaya.dao;
 
-import by.training.zaretskaya.interfaces.CollectionDAO;
-import by.training.zaretskaya.interfaces.DocumentDAO;
-import by.training.zaretskaya.interfaces.ICache;
+import by.training.zaretskaya.cache.ICache;
 import by.training.zaretskaya.models.Collection;
 import by.training.zaretskaya.models.Document;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,13 +13,15 @@ import java.util.List;
 @Qualifier("DocumentCachedDAO")
 public class DocumentCachedDAOImpl implements DocumentDAO<Document> {
 
-    @Autowired
-    @Qualifier("DocumentDao")
-    DocumentDAO<Document> documentDAO;
+    private CollectionDAO<Collection> collectionDAO;
+    private DocumentDAO<Document> documentDAO;
 
     @Autowired
-    @Qualifier("CollectionCachedDAO")
-    CollectionDAO<Collection> collectionDAO;
+    public DocumentCachedDAOImpl(@Qualifier("CollectionCachedDAO") CollectionDAO<Collection> collectionDAO,
+                                 @Qualifier("DocumentDao") DocumentDAO<Document> documentDAO) {
+        this.documentDAO = documentDAO;
+        this.collectionDAO = collectionDAO;
+    }
 
     @Override
     public void create(String nameCollection, Document document) {
@@ -63,12 +63,12 @@ public class DocumentCachedDAOImpl implements DocumentDAO<Document> {
     }
 
     @Override
-    public boolean consist(String nameCollection, String nameResource) {
+    public boolean contains(String nameCollection, String nameResource) {
         ICache<String, Document> cache = collectionDAO
                 .getById(nameCollection)
                 .getCache();
-        if (!cache.contains(nameResource)){
-            return documentDAO.consist(nameCollection, nameResource);
+        if (!cache.contains(nameResource)) {
+            return documentDAO.contains(nameCollection, nameResource);
         }
         return true;
     }

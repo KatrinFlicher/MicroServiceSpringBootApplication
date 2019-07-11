@@ -1,8 +1,7 @@
 package by.training.zaretskaya.services;
 
 
-import by.training.zaretskaya.interfaces.CollectionDAO;
-import by.training.zaretskaya.interfaces.ICollectionService;
+import by.training.zaretskaya.dao.CollectionDAO;
 import by.training.zaretskaya.models.Collection;
 import by.training.zaretskaya.validators.EntityValidator;
 import org.springframework.beans.factory.annotation.Autowired;

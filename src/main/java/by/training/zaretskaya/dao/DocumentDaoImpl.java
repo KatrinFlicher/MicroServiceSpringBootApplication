@@ -5,7 +5,6 @@ import by.training.zaretskaya.constants.SQLConstants;
 import by.training.zaretskaya.exception.CollectionNameNotSupportedException;
 import by.training.zaretskaya.exception.ResourceNotFoundException;
 import by.training.zaretskaya.exception.SomethingWrongWithDataBaseException;
-import by.training.zaretskaya.interfaces.DocumentDAO;
 import by.training.zaretskaya.models.Document;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -34,7 +33,7 @@ public class DocumentDaoImpl implements DocumentDAO<Document> {
     private JdbcTemplate jdbcTemplate;
 
     @Autowired
-    public DocumentDaoImpl(JdbcTemplate jdbcTemplate){
+    public DocumentDaoImpl(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
 
@@ -102,7 +101,7 @@ public class DocumentDaoImpl implements DocumentDAO<Document> {
     }
 
     @Override
-    public boolean consist(String nameCollection, String nameResource) {
+    public boolean contains(String nameCollection, String nameResource) {
         try {
             get(nameCollection, nameResource);
             return true;

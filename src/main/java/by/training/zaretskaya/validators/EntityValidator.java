@@ -4,9 +4,9 @@ import by.training.zaretskaya.constants.Constants;
 import by.training.zaretskaya.exception.CollectionWrongParameters;
 import by.training.zaretskaya.exception.DocumentIsInvalidUnderTheScheme;
 import by.training.zaretskaya.exception.ResourceIsExistException;
-import by.training.zaretskaya.impl.FactoryCache;
-import by.training.zaretskaya.interfaces.CollectionDAO;
-import by.training.zaretskaya.interfaces.DocumentDAO;
+import by.training.zaretskaya.cache.FactoryCache;
+import by.training.zaretskaya.dao.CollectionDAO;
+import by.training.zaretskaya.dao.DocumentDAO;
 import by.training.zaretskaya.models.Collection;
 import by.training.zaretskaya.models.Document;
 import org.apache.logging.log4j.LogManager;
@@ -34,7 +34,7 @@ public class EntityValidator {
 
 
     public void checkNewNameForTable(String newName) {
-        if (collectionDAO.consist(newName)) {
+        if (collectionDAO.contains(newName)) {
             log.error("Collection is already exist in Data Base");
             throw new ResourceIsExistException(Constants.RESOURCE_COLLECTION, newName);
         }
@@ -58,7 +58,7 @@ public class EntityValidator {
     }
 
     public void checkAbsenceOfNewDocumentInTheTable(String collectionName, String documentName) {
-        if (documentDAO.consist(collectionName, documentName)) {
+        if (documentDAO.contains(collectionName, documentName)) {
             log.error("Document is already exist in Data Base");
             throw new ResourceIsExistException(Constants.RESOURCE_DOCUMENT, documentName);
         }

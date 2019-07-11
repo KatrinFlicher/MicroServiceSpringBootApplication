@@ -5,8 +5,8 @@ import by.training.zaretskaya.constants.Constants;
 import by.training.zaretskaya.exception.BadRequestException;
 import by.training.zaretskaya.exception.FailedOperationException;
 import by.training.zaretskaya.exception.ResourceNotFoundException;
-import by.training.zaretskaya.interfaces.DistributedDocumentService;
-import by.training.zaretskaya.interfaces.IDocumentService;
+import by.training.zaretskaya.services.DistributedDocumentService;
+import by.training.zaretskaya.services.IDocumentService;
 import by.training.zaretskaya.models.Document;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -52,7 +52,7 @@ public class DistributedDocumentServiceImpl extends DistributedServiceBase<Docum
                     nameCollection);
         } catch (FailedOperationException e) {
             documentService.delete(nameCollection, document.getKey());
-            throw new FailedOperationException();
+            throw e;
         }
     }
 

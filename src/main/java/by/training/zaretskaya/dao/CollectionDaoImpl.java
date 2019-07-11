@@ -6,7 +6,6 @@ import by.training.zaretskaya.constants.SQLConstants;
 import by.training.zaretskaya.exception.CollectionNameNotSupportedException;
 import by.training.zaretskaya.exception.ResourceNotFoundException;
 import by.training.zaretskaya.exception.SomethingWrongWithDataBaseException;
-import by.training.zaretskaya.interfaces.CollectionDAO;
 import by.training.zaretskaya.models.Collection;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -14,7 +13,10 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Component;
 
-import javax.persistence.*;
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.PersistenceException;
+import javax.persistence.TypedQuery;
 import javax.transaction.Transactional;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -26,9 +28,6 @@ import java.util.regex.Pattern;
 @Transactional
 public class CollectionDaoImpl implements CollectionDAO<Collection> {
     private static final Logger log = LogManager.getLogger(CollectionDaoImpl.class);
-
-//    @PersistenceUnit
-//    private EntityManagerFactory managerFactory;
 
     @PersistenceContext
     private EntityManager entityManager;
@@ -114,7 +113,7 @@ public class CollectionDaoImpl implements CollectionDAO<Collection> {
     }
 
     @Override
-    public boolean consist(String name) {
+    public boolean contains(String name) {
         try {
             getById(name);
             return true;

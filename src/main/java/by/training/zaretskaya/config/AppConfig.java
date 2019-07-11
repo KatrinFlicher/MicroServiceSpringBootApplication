@@ -2,8 +2,8 @@ package by.training.zaretskaya.config;
 
 import by.training.zaretskaya.constants.ConfigurationConstants;
 import by.training.zaretskaya.constants.Constants;
-import by.training.zaretskaya.impl.LFUCacheImpl;
-import by.training.zaretskaya.interfaces.ICache;
+import by.training.zaretskaya.cache.LFUCacheImpl;
+import by.training.zaretskaya.cache.ICache;
 import by.training.zaretskaya.models.Collection;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -21,10 +21,7 @@ import org.springframework.web.client.RestTemplate;
 
 import javax.sql.DataSource;
 import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Configuration
 public class AppConfig {

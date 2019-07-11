@@ -1,7 +1,6 @@
 package by.training.zaretskaya.dao;
 
 import by.training.zaretskaya.exception.ResourceNotFoundException;
-import by.training.zaretskaya.interfaces.CollectionDAO;
 import by.training.zaretskaya.models.Collection;
 import org.junit.Test;
 import org.junit.runner.RunWith;

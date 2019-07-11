@@ -1,9 +1,7 @@
 package by.training.zaretskaya.dao;
 
 import by.training.zaretskaya.exception.ResourceNotFoundException;
-import by.training.zaretskaya.impl.FactoryCache;
-import by.training.zaretskaya.interfaces.CollectionDAO;
-import by.training.zaretskaya.interfaces.DocumentDAO;
+import by.training.zaretskaya.cache.FactoryCache;
 import by.training.zaretskaya.models.Collection;
 import by.training.zaretskaya.models.Document;
 import org.junit.Before;

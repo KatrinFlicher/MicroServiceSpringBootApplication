@@ -1,9 +1,8 @@
 package by.training.zaretskaya.dao;
 
 import by.training.zaretskaya.constants.Constants;
-import by.training.zaretskaya.impl.FactoryCache;
-import by.training.zaretskaya.interfaces.CollectionDAO;
-import by.training.zaretskaya.interfaces.ICache;
+import by.training.zaretskaya.cache.FactoryCache;
+import by.training.zaretskaya.cache.ICache;
 import by.training.zaretskaya.models.Collection;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -74,9 +73,9 @@ public class CollectionCachedDAOImpl implements CollectionDAO<Collection> {
     }
 
     @Override
-    public boolean consist(String name) {
+    public boolean contains(String name) {
         if (!mapCollection.contains(name)) {
-            return collectionDao.consist(name);
+            return collectionDao.contains(name);
         }
         return true;
     }

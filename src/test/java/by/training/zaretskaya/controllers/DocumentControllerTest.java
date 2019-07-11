@@ -1,6 +1,6 @@
 package by.training.zaretskaya.controllers;
 
-import by.training.zaretskaya.interfaces.IDocumentService;
+import by.training.zaretskaya.services.IDocumentService;
 import by.training.zaretskaya.models.Document;
 import org.junit.Test;
 import org.junit.runner.RunWith;

@@ -1,7 +1,7 @@
 package by.training.zaretskaya.models;
 
 
-import by.training.zaretskaya.interfaces.ICache;
+import by.training.zaretskaya.cache.ICache;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.hibernate.annotations.Type;
 
