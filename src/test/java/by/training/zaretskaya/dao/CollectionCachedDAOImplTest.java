@@ -1,13 +1,17 @@
 package by.training.zaretskaya.dao;
 
+import by.training.zaretskaya.cache.ICache;
+import by.training.zaretskaya.cache.LFUCacheImpl;
+import by.training.zaretskaya.constants.Constants;
 import by.training.zaretskaya.exception.ResourceNotFoundException;
 import by.training.zaretskaya.models.Collection;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.MockitoJUnitRunner;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 import java.util.Arrays;
 import java.util.List;
@@ -25,16 +29,21 @@ public class CollectionCachedDAOImplTest {
             "  \"maxLength\": 3\n" +
             "}");
     @Mock
+    @Qualifier("CollectionDAO")
     private CollectionDAO collectionDAO;
-    @InjectMocks
+    private ICache<String, Collection> mapCollection;
     private CollectionCachedDAOImpl collectionCachedDAO;
+
+    @Before
+    public void setUp() {
+        mapCollection = new LFUCacheImpl(Constants.MAX_SIZE_FOR_CACHE_COLLECTIONS);
+        collectionCachedDAO = new CollectionCachedDAOImpl(collectionDAO, mapCollection);
+    }
 
     @Test
     public void testGetCollectionById() {
-        Mockito.when(
-                collectionDAO.getById(Mockito.anyString())).thenReturn(mockCollection);
+        Mockito.when(collectionDAO.getById(Mockito.anyString())).thenReturn(mockCollection);
         assertEquals(mockCollection, collectionCachedDAO.getById(mockCollection.getName()));
-        collectionCachedDAO.getById(mockCollection.getName());
         verify(collectionDAO, times(1)).getById(mockCollection.getName());
     }
 
