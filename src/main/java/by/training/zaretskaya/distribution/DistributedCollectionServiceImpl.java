@@ -2,7 +2,6 @@ package by.training.zaretskaya.distribution;
 
 import by.training.zaretskaya.config.Node;
 import by.training.zaretskaya.exception.FailedOperationException;
-import by.training.zaretskaya.services.DistributedCollectionService;
 import by.training.zaretskaya.services.ICollectionService;
 import by.training.zaretskaya.models.Collection;
 import org.apache.logging.log4j.LogManager;
@@ -32,7 +31,6 @@ public class DistributedCollectionServiceImpl extends DistributedServiceBase<Col
                                             @Qualifier("CollectionService") ICollectionService<Collection> collectionService) {
         super(Collection.class);
         this.collectionService = collectionService;
-        log.info(nodesAll);
         this.nodesAll = nodesAll;
     }
 
@@ -75,7 +73,7 @@ public class DistributedCollectionServiceImpl extends DistributedServiceBase<Col
     }
 
     @Override
-    public List<Collection> listCollections(String objectToCompare, int size) {
+    public List<Collection> list(String objectToCompare, int size) {
         for (Node node : nodesAll.values()) {
             try {
                 ResponseEntity<List<Collection>> entity = new ListRestCommand<>(HttpMethod.GET,

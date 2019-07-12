@@ -21,8 +21,8 @@ public interface DocumentDAO<D> {
     void update(String nameCollection, String nameResource, D document);
 
     /**
-     * Returns list of documents for the specified table from Data base starting with
-     * the specified page and limited in specified size.
+     * Returns list of documents for the specified table from Data base compared with
+     * the specified object  and limited in specified size.
      *
      * @param nameCollection  - name of table collection
      * @param objectToCompare - object to compare with

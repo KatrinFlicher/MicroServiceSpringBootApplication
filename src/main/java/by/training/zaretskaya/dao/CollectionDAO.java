@@ -21,8 +21,8 @@ public interface CollectionDAO<C> {
     void update(String name, C collection);
 
     /**
-     * Returns list of collections from Data base starting with
-     * the specified page and limited in specified size.
+     * Returns list of collections from Data base compared with
+     * the specified object and limited in specified size.
      *
      * @param objectToCompare - object to compare with
      * @param size            - quantity of output collections

@@ -21,7 +21,6 @@ public class ListRestCommand<T> extends RestCommand<T> {
         this.size = size;
     }
 
-
     ResponseEntity<List<T>> executeList() {
         log.info("Send " + getMethod().toString() + " request to " + getUri());
         return getRestTemplate().exchange(getUri(), getMethod(),

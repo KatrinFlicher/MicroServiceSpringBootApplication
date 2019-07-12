@@ -1,5 +1,6 @@
 package by.training.zaretskaya.distribution;
 
+import by.training.zaretskaya.config.BeanUtil;
 import by.training.zaretskaya.constants.Constants;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

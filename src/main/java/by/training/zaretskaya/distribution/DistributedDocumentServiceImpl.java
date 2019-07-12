@@ -5,9 +5,8 @@ import by.training.zaretskaya.constants.Constants;
 import by.training.zaretskaya.exception.BadRequestException;
 import by.training.zaretskaya.exception.FailedOperationException;
 import by.training.zaretskaya.exception.ResourceNotFoundException;
-import by.training.zaretskaya.services.DistributedDocumentService;
-import by.training.zaretskaya.services.IDocumentService;
 import by.training.zaretskaya.models.Document;
+import by.training.zaretskaya.services.IDocumentService;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.JSONObject;
@@ -39,7 +38,6 @@ public class DistributedDocumentServiceImpl extends DistributedServiceBase<Docum
                                           @Qualifier("DocumentService") IDocumentService<Document> documentService,
                                           Node node) {
         super(Document.class);
-        System.out.println("FROM DOCDIST" + listGroups);
         this.documentService = documentService;
         this.listGroups = listGroups;
         this.node = node;
@@ -87,6 +85,55 @@ public class DistributedDocumentServiceImpl extends DistributedServiceBase<Docum
 
     @Override
     public List<Document> list(String nameCollection, String objectToCompare, int size) {
+        for (Node node : listGroups.get(node.getIdGroup())) {
+            try {
+                ResponseEntity<List<Document>> entity = new ListRestCommand<>(HttpMethod.GET, Document.class,
+                        node.getHost(), objectToCompare, size, nameCollection)
+                        .executeList();
+                log.info("Response is received from " + node.getHost());
+                return entity.getBody();
+            } catch (ResourceAccessException | HttpServerErrorException.ServiceUnavailable e) {
+                log.error("Node " + node.getName() + " is unavailable.", e);
+            } catch (HttpClientErrorException e) {
+                log.error("ClientError is received from " + node.getName(), e);
+                throw new ResourceNotFoundException(new JSONObject(e.getResponseBodyAsString())
+                        .getString("message"));
+            }
+        }
+        log.error("Operation \"List documents\" was failed");
+        throw new FailedOperationException();
+    }
+
+    @Override
+    public boolean isMyGroup(String id) {
+        return defineIdGroup(id) == node.getIdGroup();
+    }
+
+    @Override
+    public ResponseEntity redirectRequest(HttpMethod method, Document entity, String... ids) {
+        List<Node> list = listGroups.get(defineIdGroup(ids[Constants.POSITION_ID_DOCUMENT]));
+        try {
+            if (method == HttpMethod.GET) {
+                return get(list, ids);
+            }
+            RestCommand<Document> command = new RestCommand<>(method, Document.class, list.get(0).getHost(), entity, ids);
+            command.turnOffFlagReplica();
+            return command.execute();
+        } catch (ResourceAccessException | HttpServerErrorException.ServiceUnavailable e) {
+            log.error("Node " + list.get(0).getName() + " is unavailable.", e);
+            throw new FailedOperationException();
+        } catch (HttpClientErrorException e) {
+            log.error("ClientError is received from " + list.get(0).getName(), e);
+            JSONObject json = new JSONObject(e.getResponseBodyAsString());
+            if (e.getStatusCode() == HttpStatus.NOT_FOUND) {
+                throw new ResourceNotFoundException(json.getString("message"));
+            }
+            throw new BadRequestException(json.getString("message"));
+        }
+    }
+
+    @Override
+    public List<Document> listFromAllGroups(String nameCollection, String objectToCompare, int size) {
         List<List<Node>> list = new ArrayList<>(listGroups);
         list.remove(node.getIdGroup().intValue());
         List<Document> documents = new ArrayList<>();
@@ -117,55 +164,6 @@ public class DistributedDocumentServiceImpl extends DistributedServiceBase<Docum
             }
         }
         return documents;
-    }
-
-    @Override
-    public boolean isMyGroup(String id) {
-        return defineIdGroup(id) == node.getIdGroup();
-    }
-
-    @Override
-    public ResponseEntity redirectQuery(HttpMethod method, Document entity, String... ids) {
-        List<Node> list = listGroups.get(defineIdGroup(ids[Constants.POSITION_ID_DOCUMENT]));
-        try {
-            if (method == HttpMethod.GET) {
-                return get(list, ids);
-            }
-            RestCommand<Document> command = new RestCommand<>(method, Document.class, list.get(0).getHost(), entity, ids);
-            command.turnOffFlagReplica();
-            return command.execute();
-        } catch (ResourceAccessException | HttpServerErrorException.ServiceUnavailable e) {
-            log.error("Node " + list.get(0).getName() + " is unavailable.", e);
-            throw new FailedOperationException();
-        } catch (HttpClientErrorException e) {
-            log.error("ClientError is received from " + list.get(0).getName(), e);
-            JSONObject json = new JSONObject(e.getResponseBodyAsString());
-            if (e.getStatusCode() == HttpStatus.NOT_FOUND) {
-                throw new ResourceNotFoundException(json.getString("message"));
-            }
-            throw new BadRequestException(json.getString("message"));
-        }
-    }
-
-    @Override
-    public List<Document> listFromReplica(String nameCollection, String objectToCompare, int size) {
-        for (Node node : listGroups.get(node.getIdGroup())) {
-            try {
-                ResponseEntity<List<Document>> entity = new ListRestCommand<>(HttpMethod.GET, Document.class,
-                        node.getHost(), objectToCompare, size, nameCollection)
-                        .executeList();
-                log.info("Response is received from " + node.getHost());
-                return entity.getBody();
-            } catch (ResourceAccessException | HttpServerErrorException.ServiceUnavailable e) {
-                log.error("Node " + node.getName() + " is unavailable.", e);
-            } catch (HttpClientErrorException e) {
-                log.error("ClientError is received from " + node.getName(), e);
-                throw new ResourceNotFoundException(new JSONObject(e.getResponseBodyAsString())
-                        .getString("message"));
-            }
-        }
-        log.error("Operation \"List documents\" was failed");
-        throw new FailedOperationException();
     }
 
     private int defineIdGroup(String id) {

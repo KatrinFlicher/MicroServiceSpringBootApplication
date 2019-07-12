@@ -5,7 +5,7 @@ import by.training.zaretskaya.config.Node;
 import by.training.zaretskaya.constants.Constants;
 import by.training.zaretskaya.exception.FailedOperationException;
 import by.training.zaretskaya.exception.SomethingWrongWithDataBaseException;
-import by.training.zaretskaya.services.DistributedDocumentService;
+import by.training.zaretskaya.distribution.DistributedDocumentService;
 import by.training.zaretskaya.services.IDocumentService;
 import by.training.zaretskaya.models.Document;
 import org.apache.logging.log4j.LogManager;
@@ -55,7 +55,7 @@ public class DocumentController {
                 throw new FailedOperationException();
             }
         } else {
-            return distributedService.redirectQuery(HttpMethod.GET, null, idCollection, idDoc).getBody();
+            return distributedService.redirectRequest(HttpMethod.GET, null, idCollection, idDoc).getBody();
         }
     }
 
@@ -70,7 +70,7 @@ public class DocumentController {
                 distributedService.create(idCollection, document);
             }
         } else {
-            distributedService.redirectQuery(HttpMethod.POST, document, idCollection);
+            distributedService.redirectRequest(HttpMethod.POST, document, idCollection);
         }
         URI location = ServletUriComponentsBuilder
                 .fromCurrentRequest()
@@ -93,7 +93,7 @@ public class DocumentController {
                 distributedService.update(idCollection, idDoc, document);
             }
         } else {
-            distributedService.redirectQuery(HttpMethod.PUT, document, idCollection, idDoc);
+            distributedService.redirectRequest(HttpMethod.PUT, document, idCollection, idDoc);
         }
     }
 
@@ -109,7 +109,7 @@ public class DocumentController {
                 distributedService.delete(idCollection, idDoc);
             }
         } else {
-            distributedService.redirectQuery(HttpMethod.DELETE, null, idCollection, idDoc);
+            distributedService.redirectRequest(HttpMethod.DELETE, null, idCollection, idDoc);
         }
     }
 
@@ -127,13 +127,13 @@ public class DocumentController {
         } catch (SomethingWrongWithDataBaseException e) {
             log.error("Problem with Data Base in  " + node.getName(), e);
             if (!flagReplica) {
-                return distributedService.listFromReplica(idCollection, compare, size);
+                return distributedService.list(idCollection, compare, size);
             } else {
                 throw new FailedOperationException();
             }
         }
         if (!flagReplica) {
-            documents.addAll(distributedService.list(idCollection, compare, size));
+            documents.addAll(distributedService.listFromAllGroups(idCollection, compare, size));
             documents.sort(Comparator.comparing(Document::getKey));
             log.info("Method LIST is successfully executed");
             return documents.subList(0, size);

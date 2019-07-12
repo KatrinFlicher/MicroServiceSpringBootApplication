@@ -2,7 +2,7 @@ package by.training.zaretskaya.controllers;
 
 import by.training.zaretskaya.config.Node;
 import by.training.zaretskaya.models.Collection;
-import by.training.zaretskaya.services.DistributedCollectionService;
+import by.training.zaretskaya.distribution.DistributedCollectionService;
 import by.training.zaretskaya.services.ICollectionService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -89,7 +89,7 @@ public class CollectionControllerTest {
         String expectedList = "[" + exampleCollectionJson + "," + exampleCollectionJson +
                 "," + exampleCollectionJson + "]";
         List<Collection> collections = Arrays.asList(mockCollection, mockCollection, mockCollection);
-        when(collectionService.listCollections("", 4))
+        when(collectionService.list("", 4))
                 .thenReturn(collections);
         mockMvc.perform(get("/rest")
                 .accept(MediaType.APPLICATION_JSON))

@@ -63,7 +63,7 @@ public class CollectionServiceImplTest {
     public void testListCollections() {
         List<Collection> expectedCollections = Arrays.asList(mockCollection, mockCollection, mockCollection);
         when(collectionDAO.list(Mockito.anyString(), Mockito.anyInt())).thenReturn(expectedCollections);
-        List<Collection> collections = collectionService.listCollections("", 10);
+        List<Collection> collections = collectionService.list("", 10);
         assertEquals(expectedCollections, collections);
     }
 }

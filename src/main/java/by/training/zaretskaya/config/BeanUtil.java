@@ -1,4 +1,4 @@
-package by.training.zaretskaya.distribution;
+package by.training.zaretskaya.config;
 
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;

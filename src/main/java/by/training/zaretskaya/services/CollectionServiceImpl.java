@@ -48,7 +48,7 @@ public class CollectionServiceImpl implements ICollectionService<Collection> {
     }
 
     @Override
-    public List<Collection> listCollections(String objectToCompare, int size) {
+    public List<Collection> list(String objectToCompare, int size) {
         return collectionDAO.list(objectToCompare, size);
     }
 

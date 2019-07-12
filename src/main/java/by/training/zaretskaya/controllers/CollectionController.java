@@ -4,7 +4,7 @@ import by.training.zaretskaya.config.Node;
 import by.training.zaretskaya.constants.Constants;
 import by.training.zaretskaya.exception.FailedOperationException;
 import by.training.zaretskaya.exception.SomethingWrongWithDataBaseException;
-import by.training.zaretskaya.services.DistributedCollectionService;
+import by.training.zaretskaya.distribution.DistributedCollectionService;
 import by.training.zaretskaya.services.ICollectionService;
 import by.training.zaretskaya.models.Collection;
 import org.apache.logging.log4j.LogManager;
@@ -105,12 +105,12 @@ public class CollectionController {
              @RequestHeader(name = "replica", required = false, defaultValue = "false")
                      boolean flagReplica) {
         try {
-            List<Collection> collections = collectionService.listCollections(compare, size);
+            List<Collection> collections = collectionService.list(compare, size);
             log.info("Method LIST is successfully executed in " + node.getName());
             return collections;
         } catch (SomethingWrongWithDataBaseException e) {
             if (!flagReplica) {
-                return distributedService.listCollections(compare, size);
+                return distributedService.list(compare, size);
             }
             throw new FailedOperationException();
         }
